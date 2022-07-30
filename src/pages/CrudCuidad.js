@@ -10,11 +10,13 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { ProductService } from "../service/ProductService";
+import { Dropdown } from "primereact/dropdown";
 
-const Crud = () => {
+const CrudCuidad = () => {
     let emptyProduct = {
         id: null,
         nombre: "",
+        provincia: { id: null, nombre: "" },
     };
 
     const [products, setProducts] = useState(null);
@@ -28,9 +30,13 @@ const Crud = () => {
     const toast = useRef(null);
     const dt = useRef(null);
 
+    const [dropdownItem, setDropdownItem] = useState(null);
+    const [dropdownItems, setDropdownItems] = useState(null) 
+
     useEffect(() => {
         const productService = new ProductService();
-        productService.getProducts().then((data) => setProducts(data));
+        productService.getCuidad().then((data) => setProducts(data));
+        productService.getProducts().then((data) => setDropdownItems(data));
     }, []);
 
     const formatCurrency = (value) => {
@@ -71,7 +77,8 @@ const Crud = () => {
 
                 _products[index] = _product;
 
-                productService.putProvincia(_product);
+
+                productService.putCiudad(_product)
 
                 toast.current.show({
                     severity: "success",
@@ -80,11 +87,11 @@ const Crud = () => {
                     life: 3000,
                 });
             } else {
-                productService.postProvincia(_product);
+                productService.postCiudad(_product)
 
-                /*  _product.id = createId();
-                _product.image = "product-placeholder.svg"; */
-                _products.push(_product); 
+                // _product.id = createId();
+                // _product.image = "product-placeholder.svg";
+                // _products.push(_product);
                 toast.current.show({
                     severity: "success",
                     summary: "Successful",
@@ -114,9 +121,6 @@ const Crud = () => {
         setProducts(_products);
         setDeleteProductDialog(false);
         setProduct(emptyProduct);
-
-       const prov = new ProductService()
-       prov.deleteProvincia(products.id)
         toast.current.show({
             severity: "success",
             summary: "Successful",
@@ -220,8 +224,17 @@ const Crud = () => {
     const nameBodyTemplate = (rowData) => {
         return (
             <>
-                <span className="p-column-title">Name</span>
+                <span className="p-column-title">Ciudad</span>
                 {rowData.nombre}
+            </>
+        );
+    };
+
+   const provinciaBodyTemplate = (rowData) => {
+        return (
+            <>
+                <span className="p-column-title">Provincia</span>
+                {rowData.provincia.nombre}
             </>
         );
     };
@@ -282,7 +295,7 @@ const Crud = () => {
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Provincias</h5>
+            <h5 className="m-0">Ciudades</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Buscar..." />
@@ -334,14 +347,15 @@ const Crud = () => {
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}></Column>
                         <Column field="id" header="Id" body={codeBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Nombre" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
+                        <Column field="nombre" header="Nombre Cuidad" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
+                        <Column field="nombre" header="Nombre Provincia" body={provinciaBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column body={actionBodyTemplate}></Column>
                     </DataTable>
 
-                    <Dialog visible={productDialog} style={{ width: "450px" }} header="Provincia" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
+                    <Dialog visible={productDialog} style={{ width: "450px" }} header="Cuidad" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
                         {product.image && <img src={`assets/demo/images/product/${product.image}`} alt={product.image} width="150" className="mt-0 mx-auto mb-5 block shadow-2" />}
                         <div className="field">
-                            <label htmlFor="name">Nombre</label>
+                            <label htmlFor="name">Nombre Cuidad</label>
                             <InputText
                                 id="nombre"
                                 value={product.nombre}
@@ -352,7 +366,12 @@ const Crud = () => {
                                     "p-invalid": submitted && !product.nombre,
                                 })}
                             />
-                            {submitted && !product.nombre && <small className="p-invalid">Name is required.</small>}
+                            {submitted && !product.nombre && <small className="p-invalid">El nombre de la ciudad es requerido.</small>}
+                        </div>
+
+                        <div className="field col-12 md:col-3">
+                            <label htmlFor="state">Provincia</label>
+                            <Dropdown id="state" value={dropdownItem} onChange={(e) => setDropdownItem(e.value)} options={dropdownItems} optionLabel="nombre" placeholder="Select One"></Dropdown>
                         </div>
                     </Dialog>
 
@@ -361,7 +380,7 @@ const Crud = () => {
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
                             {product && (
                                 <span>
-                                    Are you sure you want to delete <b>{product.nombre}</b>?
+                                    Are you sure you want to delete <b>{product.name}</b>?
                                 </span>
                             )}
                         </div>
@@ -383,4 +402,4 @@ const comparisonFn = function (prevProps, nextProps) {
     return prevProps.location.pathname === nextProps.location.pathname;
 };
 
-export default React.memo(Crud, comparisonFn);
+export default React.memo(CrudCuidad, comparisonFn);
