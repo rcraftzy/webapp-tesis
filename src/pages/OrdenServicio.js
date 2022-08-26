@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { Accordion, AccordionTab } from "primereact/accordion";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
 import { FileUpload } from "primereact/fileupload";
@@ -10,12 +9,26 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { ProductService } from "../service/ProductService";
-
-import { InputSwitch } from "primereact/inputswitch";
-import ListDemo from "../components/ListDemo";
+import { Link } from "react-router-dom";
+import { OrdenServicioService } from "../service/OrdenServicioService";
 
 const OrdenServicio = () => {
-    let emptyDetalleOrdenServicio = {};
+    let emptyDetalleOrdenServicio = {
+        id: null,
+        orden_servicio: {},
+        cantidad: null,
+        producto: {},
+        descripcion: "",
+        precio_unitario: null,
+        descuento: null,
+        porcentaje_IVA: null,
+        valor_IVA: null,
+        total: null,
+        diagnostico_recepcion: "",
+        diagnostico_tecnico: "",
+        descripcion_diagnostico_tecnico: "",
+        estado_orden_servcio: {},
+    };
     let emptyOrdenServicio = {
         id: null,
         numero_orden: "",
@@ -93,9 +106,19 @@ const OrdenServicio = () => {
     const dt = useRef(null);
 
     useEffect(() => {
-        const productService = new ProductService();
-        productService.getProducts().then((data) => setOrdenesServicio(data));
+        const ordenServicioService = new OrdenServicioService();
+        ordenServicioService.getOrdenes().then((data) => setOrdenesServicio(data));
+        ordenServicioService.getDetalles().then((data) => setDetalleOrdenesServicio(data));
     }, []);
+
+    const menubarEndTemplate = () => {
+        return (
+            <span className="p-input-icon-left">
+                <i className="pi pi-search" />
+                <InputText type="text" placeholder="Search" />
+            </span>
+        );
+    };
 
     const formatCurrency = (value) => {
         return value.toLocaleString("en-US", {
@@ -257,7 +280,9 @@ const OrdenServicio = () => {
         return (
             <React.Fragment>
                 <div className="my-2">
-                    <Button label="Nuevo" icon="pi pi-plus" className="p-button-success mr-2" onClick={openNew} />
+                    <Link to="/create-orden-servicio">
+                        <Button label="Nuevo" icon="pi pi-plus" className="p-button-success mr-2" />
+                    </Link>
                 </div>
             </React.Fragment>
         );
@@ -381,106 +406,113 @@ const OrdenServicio = () => {
                     <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
                     <div className="grid">
                         <div className="col-12">
-                            <div className="card">
-                                <p>
-                                    <strong>Orden: </strong> 123
-                                </p>
-                                <p>
-                                    <strong>Cliente: </strong> Roberto Carlos Toalongo Galabay
-                                </p>
-                                <p>
-                                    <strong>Fecha de emision: </strong>22/12/2022
-                                </p>
-                                <p>
-                                    <strong>Tecnico: </strong> Roberto Carlos Toalongo Galabay
-                                </p>
-                                <p>
-                                    <strong>Total: </strong> 23$
-                                </p>
-                                <hr />
-                                <p>
-                                    <strong>
-                                        Observaciones:
-                                        <br />
-                                    </strong>
-                                    23$
-                                </p>
-                                  <InputSwitch checked={switchValue} onChange={(e) => setSwitchValue(e.value)} />
+                            <div className="card m-3 border-1 surface-border">
+                                <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
+                                    <div className="flex-1 text-center md:text-left">
+                                        <div>
+                                            <i className="pi pi-hashtag" />
+                                            <span>22</span>
+                                        </div>
+                                        <div className="mt-2 mb-2">
+                                            Técnico<span className="font-semibold m-2">Roberto Carlos Toalongo Galabay</span>
+                                        </div>
+                                        <div className="mb-3">
+                                            <i className="pi pi-calendar" />
+                                            <span>22/12/2022</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
+                                        <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">$50</span>
+                                        <span className="p-buttonset">
+                                            <Button label="Editar" icon="pi pi-pencil" />
+                                            <Button label="Eliminar" icon="pi pi-trash" />
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <Accordion>
+                                    <AccordionTab header="Detalles">
+                                        <section>
+                                            <article>
+                                                <strong>Descripción:</strong>
+                                                <p></p>
+                                            </article>
+                                            <article>
+                                                <strong>Diagnostico en recepcion:</strong>
+                                                <p></p>
+                                            </article>
+                                            <article>
+                                                <strong>Diagnostico Tecnico:</strong>
+                                                <p></p>
+                                            </article>
+                                            <article>
+                                                <strong>Descripción:</strong>
+                                                <p></p>
+                                            </article>
+                                            <article>
+                                                <strong>Productos:</strong>
+                                                <p></p>
+                                            </article>
+                                            <article>
+                                                <strong>Precio unitario:</strong>23
+                                            </article>
+                                            <article>
+                                                <strong>Cantidad:</strong>
+                                            </article>
+                                            <article>
+                                                <strong>Descuento:</strong>
+                                            </article>
+                                            <article>
+                                                <strong>Porcentaje IVA:</strong>
+                                            </article>
+                                            <article>
+                                                <strong>Total IVA:</strong>
+                                            </article>
+                                            <article>
+                                                <strong>Total:</strong>
+                                            </article>
+                                        </section>
+                                    </AccordionTab>
+                                </Accordion>
                             </div>
                         </div>
                     </div>
-                    <DataTable
-                        ref={dt}
-                        value={ordenesServicio}
-                        selection={selectedOrdenesServicio}
-                        onSelectionChange={(e) => setSelectedOrdenesServicio(e.value)}
-                        dataKey="id"
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25]}
-                        className="datatable-responsive"
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-                        globalFilter={globalFilter}
-                        emptyMessage="No products found."
-                        header={header}
-                        responsiveLayout="scroll"
-                    >
-                        <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}></Column>
-                        <Column field="id" header="Id" body={codeBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="N° Orden" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Cliente" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Fecha de emision" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Estado orden servicio" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Sub total con IVA" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Sub total sin IVA" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Tecnico" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Descuento" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Valor IVA" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Total" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="name" header="Observaciones" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column body={actionBodyTemplate}></Column>
-                        <Column>
-                            <h5>Input Switch</h5>
-                            <InputSwitch checked={switchValue} onChange={(e) => setSwitchValue(e.value)} />
-                        </Column>
-                    </DataTable>
-
-                    <Dialog visible={productDialog} style={{ width: "450px" }} header="Provincia" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
-                        {ordenServicio.image && <img src={`assets/demo/images/product/${ordenServicio.image}`} alt={ordenServicio.image} width="150" className="mt-0 mx-auto mb-5 block shadow-2" />}
-                        <div className="field">
-                            <label htmlFor="name">Nombre</label>
-                            <InputText
-                                id="nombre"
-                                value={ordenServicio.nombre}
-                                onChange={(e) => onInputChange(e, "nombre")}
-                                required
-                                autoFocus
-                                className={classNames({
-                                    "p-invalid": submitted && !ordenServicio.nombre,
-                                })}
-                            />
-                            {submitted && !ordenServicio.nombre && <small className="p-invalid">Name is required.</small>}
-                        </div>
-                    </Dialog>
-
-                    <Dialog visible={deleteProductDialog} style={{ width: "450px" }} header="Confirm" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
-                        <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
-                            {ordenServicio && (
-                                <span>
-                                    Are you sure you want to delete <b>{ordenServicio.nombre}</b>?
-                                </span>
-                            )}
-                        </div>
-                    </Dialog>
-
-                    <Dialog visible={deleteProductsDialog} style={{ width: "450px" }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
-                        <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
-                            {ordenServicio && <span>Are you sure you want to delete the selected products?</span>}
-                        </div>
-                    </Dialog>
                 </div>
+                <Dialog visible={productDialog} style={{ width: "450px" }} header="Provincia" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
+                    {ordenServicio.image && <img src={`assets/demo/images/product/${ordenServicio.image}`} alt={ordenServicio.image} width="150" className="mt-0 mx-auto mb-5 block shadow-2" />}
+                    <div className="field">
+                        <label htmlFor="name">Nombre</label>
+                        <InputText
+                            id="nombre"
+                            value={ordenServicio.nombre}
+                            onChange={(e) => onInputChange(e, "nombre")}
+                            required
+                            autoFocus
+                            className={classNames({
+                                "p-invalid": submitted && !ordenServicio.nombre,
+                            })}
+                        />
+                        {submitted && !ordenServicio.nombre && <small className="p-invalid">Name is required.</small>}
+                    </div>
+                </Dialog>
+
+                <Dialog visible={deleteProductDialog} style={{ width: "450px" }} header="Confirm" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
+                    <div className="flex align-items-center justify-content-center">
+                        <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
+                        {ordenServicio && (
+                            <span>
+                                Are you sure you want to delete <b>{ordenServicio.nombre}</b>?
+                            </span>
+                        )}
+                    </div>
+                </Dialog>
+
+                <Dialog visible={deleteProductsDialog} style={{ width: "450px" }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
+                    <div className="flex align-items-center justify-content-center">
+                        <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
+                        {ordenServicio && <span>Are you sure you want to delete the selected products?</span>}
+                    </div>
+                </Dialog>
             </div>
         </div>
     );

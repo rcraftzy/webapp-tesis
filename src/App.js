@@ -150,7 +150,6 @@ const App = () => {
                 { label: 'Provincia', icon: 'pi pi-fw pi-user-edit', to: '/crud-provincia' },
                 { label: 'Ciudad', icon: 'pi pi-fw pi-user-edit', to: '/crud-cuidad' },
                 { label: 'Orden de servicio', icon: 'pi pi-fw pi-user-edit', to: '/orden-service' },
-                { label: 'Detalle orden de servicio', icon: 'pi pi-fw pi-user-edit', to: '/detalle-orden-service' },
             ]
         },
             ];
@@ -197,7 +196,6 @@ const App = () => {
                     <Route path="/crud-provincia" component={Crud} />
                     <Route path="/crud-cuidad" component={CrudCuidad} />
                     <Route path="/orden-service" component={OrdenServicio} />
-                    <Route path="/detalle-orden-service" component={CrudCuidad} />
                     <Route path="/create-orden-servicio" component={OrdenServicioForm} />
                 </div>
 
