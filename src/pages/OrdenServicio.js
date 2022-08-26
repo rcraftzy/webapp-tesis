@@ -11,6 +11,7 @@ import { InputText } from "primereact/inputtext";
 import { ProductService } from "../service/ProductService";
 import { Link } from "react-router-dom";
 import { OrdenServicioService } from "../service/OrdenServicioService";
+import { DataView, DataViewLayoutOptions } from "primereact/dataview";
 
 const OrdenServicio = () => {
     let emptyDetalleOrdenServicio = {
@@ -94,6 +95,10 @@ const OrdenServicio = () => {
     const [deleteProductDialog, setDeleteProductDialog] = useState(false);
     const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
 
+    const [sortOrder, setSortOrder] = useState(null);
+    const [layout, setLayout] = useState("grid");
+    const [sortField, setSortField] = useState(null);
+
     const [ordenServicio, setOrdenServicio] = useState(emptyOrdenServicio);
     const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(emptyOrdenServicio);
 
@@ -108,7 +113,8 @@ const OrdenServicio = () => {
     useEffect(() => {
         const ordenServicioService = new OrdenServicioService();
         ordenServicioService.getOrdenes().then((data) => setOrdenesServicio(data));
-        ordenServicioService.getDetalles().then((data) => setDetalleOrdenesServicio(data));
+      console.log(ordenesServicio)
+        // ordenServicioService.getDetalles().then((data) => setDetalleOrdenesServicio(data));
     }, []);
 
     const menubarEndTemplate = () => {
@@ -397,6 +403,84 @@ const OrdenServicio = () => {
             <Button label="Yes" icon="pi pi-check" className="p-button-text" onClick={deleteSelectedProducts} />
         </>
     );
+    const dataviewListItem = (data) => {
+        return (
+            <div className="col-12">
+                <div className="card m-3 border-1 surface-border">
+                    <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
+                        <div className="flex-1 text-center md:text-left">
+                            <div>
+                                <i className="pi pi-hashtag" />
+                                <span>{data.numero_orden}</span>
+                            </div>
+                            <div className="mt-2 mb-2">
+                                Técnico<span className="font-semibold m-2"></span>
+                            </div>
+                            <div className="mb-3">
+                                <i className="pi pi-calendar" />
+                                <span>22/12/2022</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
+                            <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">$50</span>
+                            <span className="p-buttonset">
+                                <Button label="Editar" icon="pi pi-pencil" />
+                                <Button label="Eliminar" icon="pi pi-trash" />
+                            </span>
+                        </div>
+                    </div>
+
+                    <Accordion>
+                        <AccordionTab header="Detalles">
+                            <section>
+                                <article>
+                                    <strong>Descripción:</strong>
+                                    <p></p>
+                                </article>
+                                <article>
+                                    <strong>Diagnostico en recepcion:</strong>
+                                    <p></p>
+                                </article>
+                                <article>
+                                    <strong>Diagnostico Tecnico:</strong>
+                                    <p></p>
+                                </article>
+                                <article>
+                                    <strong>Descripción:</strong>
+                                    <p></p>
+                                </article>
+                                <article>
+                                    <strong>Productos:</strong>
+                                    <p></p>
+                                </article>
+                                <article>
+                                    <strong>Precio unitario:</strong>23
+                                </article>
+                                <article>
+                                    <strong>Cantidad:</strong>
+                                </article>
+                                <article>
+                                    <strong>Descuento:</strong>
+                                </article>
+                                <article>
+                                    <strong>Porcentaje IVA:</strong>
+                                </article>
+                                <article>
+                                    <strong>Total IVA:</strong>
+                                </article>
+                                <article>
+                                    <strong>Total:</strong>
+                                </article>
+                            </section>
+                        </AccordionTab>
+                    </Accordion>
+                </div>
+            </div>
+        );
+    };
+    const itemTemplate = (data) => {
+        return dataviewListItem(data);
+    };
 
     return (
         <div className="grid crud-demo">
@@ -404,79 +488,7 @@ const OrdenServicio = () => {
                 <div className="card">
                     <Toast ref={toast} />
                     <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
-                    <div className="grid">
-                        <div className="col-12">
-                            <div className="card m-3 border-1 surface-border">
-                                <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
-                                    <div className="flex-1 text-center md:text-left">
-                                        <div>
-                                            <i className="pi pi-hashtag" />
-                                            <span>22</span>
-                                        </div>
-                                        <div className="mt-2 mb-2">
-                                            Técnico<span className="font-semibold m-2">Roberto Carlos Toalongo Galabay</span>
-                                        </div>
-                                        <div className="mb-3">
-                                            <i className="pi pi-calendar" />
-                                            <span>22/12/2022</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
-                                        <span className="text-2xl font-semibold mb-2 align-self-center md:align-self-end">$50</span>
-                                        <span className="p-buttonset">
-                                            <Button label="Editar" icon="pi pi-pencil" />
-                                            <Button label="Eliminar" icon="pi pi-trash" />
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <Accordion>
-                                    <AccordionTab header="Detalles">
-                                        <section>
-                                            <article>
-                                                <strong>Descripción:</strong>
-                                                <p></p>
-                                            </article>
-                                            <article>
-                                                <strong>Diagnostico en recepcion:</strong>
-                                                <p></p>
-                                            </article>
-                                            <article>
-                                                <strong>Diagnostico Tecnico:</strong>
-                                                <p></p>
-                                            </article>
-                                            <article>
-                                                <strong>Descripción:</strong>
-                                                <p></p>
-                                            </article>
-                                            <article>
-                                                <strong>Productos:</strong>
-                                                <p></p>
-                                            </article>
-                                            <article>
-                                                <strong>Precio unitario:</strong>23
-                                            </article>
-                                            <article>
-                                                <strong>Cantidad:</strong>
-                                            </article>
-                                            <article>
-                                                <strong>Descuento:</strong>
-                                            </article>
-                                            <article>
-                                                <strong>Porcentaje IVA:</strong>
-                                            </article>
-                                            <article>
-                                                <strong>Total IVA:</strong>
-                                            </article>
-                                            <article>
-                                                <strong>Total:</strong>
-                                            </article>
-                                        </section>
-                                    </AccordionTab>
-                                </Accordion>
-                            </div>
-                        </div>
-                    </div>
+                    <DataView value={ordenesServicio} layout={layout} paginator rows={9} sortOrder={sortOrder} sortField={sortField} itemTemplate={itemTemplate}></DataView>
                 </div>
                 <Dialog visible={productDialog} style={{ width: "450px" }} header="Provincia" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
                     {ordenServicio.image && <img src={`assets/demo/images/product/${ordenServicio.image}`} alt={ordenServicio.image} width="150" className="mt-0 mx-auto mb-5 block shadow-2" />}
