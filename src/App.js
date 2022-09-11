@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import { Route, useLocation } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
-
 import { AppTopbar } from './AppTopbar';
 import { AppFooter } from './AppFooter';
 import { AppMenu } from './AppMenu';
@@ -14,6 +13,9 @@ import OrdenServicioForm from './components/OrdenServicioForm'
 import Crud from './pages/Crud';
 import CrudCuidad from './pages/CrudCuidad'
 import OrdenServicio from './pages/OrdenServicio'
+import Tecnico from './pages/Tecnico'
+import Cliente from './pages/Cliente'
+import Producto from './pages/Producto'
 
 import PrimeReact from 'primereact/api';
 import { Tooltip } from 'primereact/tooltip';
@@ -150,6 +152,9 @@ const App = () => {
                 { label: 'Provincia', icon: 'pi pi-fw pi-user-edit', to: '/crud-provincia' },
                 { label: 'Ciudad', icon: 'pi pi-fw pi-user-edit', to: '/crud-cuidad' },
                 { label: 'Orden de servicio', icon: 'pi pi-fw pi-user-edit', to: '/orden-service' },
+                { label: 'Tecnico', icon: 'pi pi-fw pi-user-edit', to: '/tecnico' },
+                { label: 'Cliente', icon: 'pi pi-fw pi-user-edit', to: '/cliente' },
+                { label: 'Producto', icon: 'pi pi-fw pi-user-edit', to: '/producto' },
             ]
         },
             ];
@@ -196,7 +201,9 @@ const App = () => {
                     <Route path="/crud-provincia" component={Crud} />
                     <Route path="/crud-cuidad" component={CrudCuidad} />
                     <Route path="/orden-service" component={OrdenServicio} />
-                    <Route path="/create-orden-servicio" component={OrdenServicioForm} />
+                    <Route path="/tecnico" component={Tecnico} />
+                    <Route path="/cliente" component={Cliente} />
+                    <Route path="/producto" component={Producto} />
                 </div>
 
                 <AppFooter layoutColorMode={layoutColorMode} />
