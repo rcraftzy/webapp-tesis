@@ -77,24 +77,24 @@ const CrudCuidad = () => {
 
         _products[index] = _product;
 
-        productService.putCiudad(_product);
+        productService.putCiudad(product.id, {id: product.id, nombre: product.nombre, provincia_id: dropdownItem.id});
 
         toast.current.show({
           severity: "success",
-          summary: "Successful",
-          detail: "Product Updated",
+          summary: "Exitoso",
+          detail: "Ciudad actualizada",
           life: 3000,
         });
       } else {
-        productService.postCiudad({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
+        productService.postCiudad({id: product.id, nombre: product.nombre, provincia_id: dropdownItem.id});
 
         // _product.id = createId();
         // _product.image = "product-placeholder.svg";
         _products.push({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
         toast.current.show({
           severity: "success",
-          summary: "Successful",
-          detail: "Product Created",
+          summary: "Exitoso",
+          detail: "Ciudad agregada",
           life: 3000,
         });
       }
@@ -116,16 +116,18 @@ const CrudCuidad = () => {
   };
 
   const deleteProduct = () => {
-    const ciudad = ProductService();
-    ciudad.deleteCiudad(product.id)
     let _products = products.filter((val) => val.id !== product.id);
     setProducts(_products);
     setDeleteProductDialog(false);
     setProduct(emptyProduct);
+
+    const ciudad = new ProductService();
+    ciudad.deleteCiudad(product.id)
+
     toast.current.show({
       severity: "success",
       summary: "Successful",
-      detail: "Product Deleted",
+      detail: "Ciudad eliminada",
       life: 3000,
     });
   };
@@ -173,12 +175,6 @@ const deleteSelectedProducts = () => {
   });
 };
 
-const onCategoryChange = (e) => {
-  let _product = { ...product };
-  _product["category"] = e.value;
-  setProduct(_product);
-};
-
 const onInputChange = (e, name) => {
   const val = (e.target && e.target.value) || "";
   let _product = { ...product };
@@ -195,20 +191,22 @@ const onInputNumberChange = (e, name) => {
   setProduct(_product);
 };
 
-const leftToolbarTemplate = () => {
-  return (
-    <React.Fragment>
-      <div className="my-2">
+  const handleLocationChange = (e) => {
+  setDropdownItem({ state: e.target.value });
+}
+
+  const leftToolbarTemplate = () => {
+    return (
+      <div>
         <Button
           label="Nuevo"
           icon="pi pi-plus"
           className="p-button-success mr-2"
           onClick={openNew}
-        />
+          />
       </div>
-    </React.Fragment>
-  );
-};
+    );
+  };
 
 const rightToolbarTemplate = () => {
   return (
@@ -271,47 +269,6 @@ const imageBodyTemplate = (rowData) => {
     </>
   );
 };
-
-const priceBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Price</span>
-      {formatCurrency(rowData.price)}
-    </>
-  );
-};
-
-const categoryBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Category</span>
-      {rowData.category}
-    </>
-  );
-};
-
-const ratingBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Reviews</span>
-      <Rating value={rowData.rating} readonly cancel={false} />
-    </>
-  );
-};
-
-const statusBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Status</span>
-      <span
-        className={`product-badge status-${rowData.inventoryStatus.toLowerCase()}`}
-      >
-        {rowData.inventoryStatus}
-      </span>
-    </>
-  );
-};
-
 const actionBodyTemplate = (rowData) => {
   return (
     <div className="actions">
@@ -411,31 +368,22 @@ return (
           className="datatable-responsive"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
           globalFilter={globalFilter}
-          emptyMessage="No products found."
+          emptyMessage="Ciudades no encontradas."
           header={header}
           responsiveLayout="scroll"
         >
-          <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}>
-          </Column>
-          <Column
-            field="id"
-            header="Id"
-            body={codeBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
-          >
-          </Column>
           <Column
             field="nombre"
             header="Nombre Cuidad"
             body={nameBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
+            headerStyle={{ width: "43%", minWidth: "10rem" }}
           >
           </Column>
           <Column
             field="nombre"
             header="Nombre Provincia"
             body={provinciaBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
+            headerStyle={{ width: "43%", minWidth: "10rem" }}
           >
           </Column>
           <Column body={actionBodyTemplate}></Column>
@@ -443,7 +391,7 @@ return (
 
         <Dialog
           visible={productDialog}
-          style={{ width: "450px" }}
+          style={{ width: "350px" }}
           header="Cuidad"
           modal
           className="p-fluid"
@@ -477,15 +425,15 @@ return (
             )}
           </div>
 
-          <div className="field col-12 md:col-6">
+          <div className="field">
             <label htmlFor="state">Provincia</label>
             <Dropdown
               id="state"
-              value={dropdownItem}
-              onChange={(e) => setDropdownItem(e.value)}
+              value={product.provincia.nombre}
+              onChange={e => setDropdownItem(e.value)}
               options={dropdownItems}
               optionLabel="nombre"
-              placeholder="Select One"
+              placeholder="Selecciona una provincia"
             >
             </Dropdown>
           </div>
@@ -538,8 +486,4 @@ return (
 );
 };
 
-const comparisonFn = function (prevProps, nextProps) {
-return prevProps.location.pathname === nextProps.location.pathname;
-};
-
-export default React.memo(CrudCuidad, comparisonFn);
+export default CrudCuidad;

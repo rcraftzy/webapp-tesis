@@ -1,21 +1,18 @@
-import React from 'react';
+import React from "react";
 
-const Dashboard = () => {
-
-    return (
-        <div className="grid">
-            <div className="col-12">
-                <div className="card">
-                    <h5>Instituto Superior Tecnológico Luis Rogerio González</h5>
-                    <p>Estudiante: Roberto Carlos Toalongo Galabay</p>
-                </div>
-            </div>
+const Dashboard = ({ name }) => {
+  return (
+    <div className="grid">
+      <div className="col-12">
+        <div className="card">
+          <h5>Instituto Superior Tecnológico Luis Rogerio González</h5>
+          <p>Estudiante: Roberto Carlos Toalongo Galabay</p>
+          <p>
+            {name ? "Hi " + name : "You are not logged in"}
+          </p>
         </div>
-    );
-}
-
-const comparisonFn = function (prevProps, nextProps) {
-    return prevProps.location.pathname === nextProps.location.pathname;
+      </div>
+    </div>
+  );
 };
-
-export default React.memo(Dashboard, comparisonFn);
+export default Dashboard

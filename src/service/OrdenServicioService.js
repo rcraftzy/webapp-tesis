@@ -2,7 +2,7 @@ import axios from "axios";
 
 export class OrdenServicioService {
   getOrdenes() {
-      return axios.get("http://localhost:9090/api/v1.0/ordenServicio").then((res) => res.data.result);
+      return axios.get("http://localhost:9090/api/v1.0/ordenServicio").then((res) => res.data);
   }
   postOrden(orden) {
     return axios.post("http://localhost:9090/api/v1.0/ordenServicio", orden);
