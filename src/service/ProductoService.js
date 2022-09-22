@@ -4,15 +4,15 @@ export class ProductoService {
   getProductos() {
     return axios.get("http://localhost:9090/api/v1.0/producto").then((
       res,
-    ) => res.data.result);
+    ) => res.data);
   }
-  postTecnico(id) {
-    return axios.post("http://localhost:9090/api/v1.0/ordenServicio", id);
+  postProducto(producto) {
+    return axios.post("http://localhost:9090/api/v1.0/producto", producto);
   }
-  putOrden(orden) {
-    return axios.put("http://localhost:9090/api/v1.0/ordenServicio", orden);
+  putProducto(id, prouducto) {
+    return axios.put("http://localhost:9090/api/v1.0/producto/"+id, prouducto);
   }
   deleteOrden(id) {
-    return axios.delete("http://localhost:9090/api/v1.0/ordenServicio/" + id);
+    return axios.delete("http://localhost:9090/api/v1.0/producto/" + id);
   }
 }

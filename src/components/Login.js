@@ -1,12 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
-// import { Alert } from "./Alert";
+import { useNavigate, Link } from "react-router-dom";
 
-import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
-
-const Login = ({ setName }) => {
+const Login = ({ setData }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +23,7 @@ const Login = ({ setName }) => {
     const content = await response.json();
 
     setRedirect(true);
-    setName(content.name);
+    setData(content.name);
   };
 
   if (redirect) {
@@ -36,28 +31,45 @@ const Login = ({ setName }) => {
   }
 
   return (
-    <form onSubmit={submit}>
-      <h1 className="h3 mb-3 fw-normal">Please sign in</h1>
-      <input
-        type="email"
-        className="form-control"
-        placeholder="Email address"
-        required
-        onChange={(e) => setEmail(e.target.value)}
-      />
+    <div className="container-grid">
+      <div className="column-left">
+        <img className="img" src="images/loginImg.png"/>
+      </div>
 
-      <input
-        type="password"
-        className="form-control"
-        placeholder="Password"
-        required
-        onChange={(e) => setPassword(e.target.value)}
-      />
+      <div className="column-right">
+      <span className="contain-txt-register">
+        ¿No estas registrado?<Link to="/register">Registrate ahora</Link>
+      </span>
+        <form onSubmit={submit}>
+          <div className="div-logo">
+            <img className="logo-login" src="images/Logo.jpeg"/>
+          </div>
+          <h1 className="title">Servicio Tecnico</h1>
+          <br />
+          <input
+            type="email"
+            className="input-email"
+            placeholder="Ingrese su correo"
+            required
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-      <button className="w-100 btn btn-lg btn-primary" type="submit">
-        Sign in
-      </button>
-    </form>
+          <br />
+          <input
+            type="password"
+            className="input-password"
+            placeholder="Contraseña"
+            required
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <br />
+
+          <button className="button" type="submit">
+            Iniciar Sesión 
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 

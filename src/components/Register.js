@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
-// import { Alert } from "./Alert";
+import { Dropdown } from "primereact/dropdown";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -30,37 +29,71 @@ const Register = () => {
     navigate("/login");
   }
 
+  useEffect(() => {
+    (
+      async () => {
+        const response = await fetch(
+          "http://localhost:9090/api/v1.0/roleUser",
+          {
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          },
+        );
+
+        const content = await response.json();
+      }
+    )();
+  });
+
   return (
-    <form onSubmit={submit}>
-      <h1 className="h3 mb-3 fw-normal">Please register</h1>
+    <div className="container-grid">
+      <div className="column-left">
+        <img className="img" src="images/loginImg.png" />
+      </div>
 
-      <input
-        className="form-control"
-        placeholder="Name"
-        required
-        onChange={(e) => setName(e.target.value)}
-      />
+      <div className="column-right">
+        <span className="contain-txt-register">
+          <Link to="/login">Volver al inicio de sesion</Link>
+        </span>
+        <form onSubmit={submit}>
 
-      <input
-        type="email"
-        className="form-control"
-        placeholder="Email address"
-        required
-        onChange={(e) => setEmail(e.target.value)}
-      />
+          <div className="div-logo">
+            <img className="logo-login" src="images/Logo.jpeg"/>
+          </div>
+             
+          <h1 className="title">Registro de Servicio Tecnico</h1>
 
-      <input
-        type="password"
-        className="form-control"
-        placeholder="Password"
-        required
-        onChange={(e) => setPassword(e.target.value)}
-      />
+          <input
+            className="input-user"
+            placeholder="Ingrese un nombre de usuario"
+            required
+            onChange={(e) => setName(e.target.value)}
+          />
 
-      <button className="w-100 btn btn-lg btn-primary" type="submit">
-        Submit
-      </button>
-    </form>
+          <br />
+          <input
+            type="email"
+            className="input-email"
+            placeholder="Ingrese su direccion e-mail"
+            required
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <br />
+          <input
+            type="password"
+            className="input-password"
+            placeholder="Contraseña"
+            required
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <br />
+          <button className="button" type="submit">
+            Registrarse
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 

@@ -1,1 +1,101 @@
+.img-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20%;
+  height: 20px;
+  background-color: #fff;
+}
 
+.column-left {
+  float: left;
+}
+
+.img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80%;
+}
+
+.container-grid {
+  display: grid; 
+  grid-template-columns: 60% 40%;
+  height: 100vh;
+}
+
+.column-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.column-left{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #696EFF;
+} 
+
+.button {
+  cursor: pointer;
+  font-size: 1.4em;
+  padding: 14px;
+  border: none;
+  width: 380px;
+  background-color: #696EFF;
+  color: #fff;;
+  border-radius: 8px;
+  margin: 20px
+}
+.input-user {
+  border: none;
+  font-size: 1.4em;
+  width: 380px;
+  border-radius: 8px;
+  margin: 20px 20px 0px 20px;
+  padding: 14px;
+}
+.input-email {
+  border: none;
+  font-size: 1.4em;
+  width: 380px;
+  margin: 20px;
+  border-radius: 8px;
+  padding: 14px;
+}
+.input-password {
+  border: none;
+  border-radius: 8px;
+  width: 380px;
+  padding: 14px;
+  font-size: 1.4em;
+  margin-left: 20px;
+}
+.logo-login {
+  width: 160px;
+  border-radius: 50%;
+}
+.div-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.title{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.contain-txt-register{
+  font-size: 1.3em;
+  position: absolute;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  top: 10px;
+  right: 15px;
+  a {
+    margin-left: 6px;
+  }
+}

@@ -1,21 +1,5 @@
-import React, {useEffect, useState} from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
-
-import Login from "./components/Login";
-import Home from "./components/Home";
-import Register from "./components/Register";
-import Layout from "./components/Layout";
-
-// import { ProtectedRoute } from "./components/ProtectedRoute";
-import Dashboard from "./components/Dashboard";
-
-import Crud from "./pages/Crud";
-import CrudCuidad from "./pages/CrudCuidad";
-import OrdenServicio from "./pages/OrdenServicio";
-import Tecnico from "./pages/Tecnico";
-import Cliente from "./pages/Cliente";
-import Producto from "./pages/Producto";
-import Empresa from "./pages/Empresa";
 
 import "primereact/resources/primereact.css";
 import "primeicons/primeicons.css";
@@ -26,39 +10,68 @@ import "./assets/demo/Demos.scss";
 import "./assets/layout/layout.scss";
 import "./App.scss";
 
+// import { ProtectedRoute } from "./components/ProtectedRoute";
 // import { AuthProvider } from "./context/AuthContext";
+const Login = lazy(() => import("./components/Login"));
+const Register = lazy(() => import("./components/Register"));
+const Layout = lazy(() => import("./components/Layout"));
+const Home = lazy(() => import("./components/Home"));
+const Dashboard = lazy(() => import("./components/Dashboard"));
+
+const Empresa = lazy(() => import("./pages/Empresa"));
+const OrdenServicio = lazy(() => import("./pages/OrdenServicio"));
+const Producto = lazy(() => import("./pages/Producto"));
+const Crud = lazy(() => import("./pages/Crud"));
+const CrudCuidad = lazy(() => import("./pages/CrudCuidad"));
+const Cliente = lazy(() => import("./pages/Cliente"));
+const Tecnico = lazy(() => import("./pages/Tecnico"));
 
 const App = () => {
+  const [data, setData] = useState("");
+  const [empresa, setEmpresa] = useState("");
 
-  const [name, setName] = useState('');
-  const [data, setData] = useState('');
+  useEffect(() => {
+    (
+      async () => {
+        const response = await fetch("http://localhost:9090/api/user", {
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
 
-    useEffect(() => {
-        (
-            async () => {
-                const response = await fetch('http://localhost:9090/api/user', {
-                    headers: {'Content-Type': 'application/json'},
-                    credentials: 'include',
-                });
+        const content = await response.json();
 
-                const content = await response.json();
+        setData(content);
+        getUserEmpresa(content.id);
+      }
+    )();
+  });
 
-                setName(content.name);
-                setData(content)
-                console.log(name)
-            }
-        )();
-    });
+  const getUserEmpresa = async (id) => {
+    const response = await fetch(
+      "http://localhost:9090/api/v1.0/empresaUser/" + id,
+      {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      },
+    );
+
+    const content = await response.json();
+
+    setEmpresa(content);
+  };
+
   return (
     <>
+      <Suspense fallback={<div />}>
         <Routes>
-          <Route path="/login" element={<Login setName={setName}/>} />
+          <Route path="/login" element={<Login setData={data} />} />
           <Route
             path="/"
+            exact
             element={
-                <Layout>
-                  <Home  name={name}/>
-                </Layout>
+              <Layout>
+                <Home data={data} />
+              </Layout>
             }
           />
           <Route path="/register" element={<Register />} />
@@ -66,68 +79,69 @@ const App = () => {
             path="/dashboard"
             exact
             element={
-                <Layout>
-                  <Dashboard name={name}/>
-                </Layout>
+              <Layout>
+                <Dashboard data={data} />
+              </Layout>
             }
           />
           <Route
             path="/provincia"
             element={
-                <Layout>
-                  <Crud />
-                </Layout>
+              <Layout>
+                <Crud />
+              </Layout>
             }
           />
           <Route
             path="/cuidad"
             element={
-                <Layout>
-                  <CrudCuidad />
-                </Layout>
+              <Layout>
+                <CrudCuidad />
+              </Layout>
             }
           />
           <Route
-            path="/orden-service"
+            path="/orden-de-servicio"
             element={
-                <Layout>
-                  <OrdenServicio />
-                </Layout>
+              <Layout>
+                <OrdenServicio />
+              </Layout>
             }
           />
           <Route
             path="/tecnico"
             element={
-                <Layout>
-                  <Tecnico />
-                </Layout>
+              <Layout>
+                <Tecnico />
+              </Layout>
             }
           />
           <Route
             path="/cliente"
             element={
-                <Layout>
-                  <Cliente />
-                </Layout>
+              <Layout>
+                <Cliente />
+              </Layout>
             }
           />
           <Route
             path="/producto"
             element={
-                <Layout>
-                  <Producto />
-                </Layout>
+              <Layout>
+                <Producto />
+              </Layout>
             }
           />
           <Route
             path="/empresa"
             element={
-                <Layout>
-                  <Empresa />
-                </Layout>
+              <Layout>
+                <Empresa {...empresa} />
+              </Layout>
             }
           />
         </Routes>
+      </Suspense>
     </>
   );
 };

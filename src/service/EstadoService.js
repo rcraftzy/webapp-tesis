@@ -16,3 +16,18 @@ export class EstadoService {
     return axios.delete("http://localhost:9090/api/v1.0/ordenServicio/" + id);
   }
 }
+
+export const getEstados = () => {
+    return axios.get("http://localhost:9090/api/v1.0/estadoordenservicio").then((
+      res,
+    ) => res.data);
+  }
+export const putEstado = (id ,estado) => {
+    return axios.put("http://localhost:9090/api/v1.0/estadoordenservicio/"+id,estado);
+  }
+export const postEstado = (estado) => {
+    return axios.post("http://localhost:9090/api/v1.0/estadoordenservicio",estado);
+}
+export const deleteEstado = (id) => {
+    return axios.delete("http://localhost:9090/api/v1.0/estadoordenservicio/"+id);
+}

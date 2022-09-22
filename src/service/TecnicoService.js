@@ -1,18 +1,35 @@
 import axios from "axios";
 
+export const getTecnicos = () => {
+  return axios.get("http://localhost:9090/api/v1.0/tecnico")
+    .then((res) => res.data);
+};
+export const postTecnicos = (tec) => {
+  return axios.post("http://localhost:9090/api/v1.0/tecnico", tec);
+};
+export const putTecnicos = (tecni) => {
+  return axios.put("http://localhost:9090/api/v1.0/tecnico", tecni);
+};
+
+export const deleteTecnicos = (id) => {
+  return axios.delete("http://localhost:9090/api/v1.0/tecnico/" + id);
+};
+
 export class TecnicoService {
   getTecnicos() {
-    return axios.get("http://localhost:9090/api/v1.0/tecnico").then((
-      res,
-    ) => res.data.result);
+    return axios.get("http://localhost:9090/api/v1.0/tecnico")
+      .then((res) => res.data);
   }
-  postTecnico(id) {
-    return axios.post("http://localhost:9090/api/v1.0/ordenServicio", id);
+
+  postTecnicos(tec) {
+    return axios.post("http://localhost:9090/api/v1.0/tecnico", tec);
   }
-  putOrden(orden) {
-    return axios.put("http://localhost:9090/api/v1.0/ordenServicio", orden);
+
+  putTecnicos(id, tecni) {
+    return axios.put("http://localhost:9090/api/v1.0/tecnico/"+id, tecni);
   }
-  deleteOrden(id) {
-    return axios.delete("http://localhost:9090/api/v1.0/ordenServicio/" + id);
+
+  deleteTecnicos(id) {
+    return axios.delete("http://localhost:9090/api/v1.0/tecnico/" + id);
   }
 }
