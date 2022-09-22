@@ -116,11 +116,6 @@ export const AppConfig = (props) => {
 
     return (
         <div ref={config} className={configClassName} id={"layout-config"}>
-            <button className="layout-config-button p-link" id="layout-config-button" onClick={toggleConfigurator}>
-                <i className="pi pi-cog"></i>
-            </button>
-            <Button className="p-button-danger layout-config-close p-button-rounded p-button-text" icon="pi pi-times" onClick={hideConfigurator}/>
-
             <div className="layout-config-content">
                 <h5 className="mt-0">Component Scale</h5>
                 <div className="config-scale">
