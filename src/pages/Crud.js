@@ -66,7 +66,7 @@ const Crud = () => {
 
         toast.current.show({
           severity: "success",
-          summary: "Successful",
+          summary: "Petición exitosa",
           detail: "Provincia actualizada",
           life: 3000,
         });
@@ -78,7 +78,7 @@ const Crud = () => {
         _products.push(_product);
         toast.current.show({
           severity: "success",
-          summary: "Successful",
+          summary: "Petición exitosa",
           detail: "Provincia creada",
           life: 3000,
         });
@@ -110,7 +110,7 @@ const Crud = () => {
     prov.deleteProvincia(product.id);
     toast.current.show({
       severity: "success",
-      summary: "Successful",
+      summary: "Petición exitosa",
       detail: "Provincia eliminada",
       life: 3000,
     });
@@ -135,8 +135,8 @@ const Crud = () => {
     setSelectedProducts(null);
     toast.current.show({
       severity: "success",
-      summary: "Successful",
-      detail: "Products Deleted",
+      summary: "Petición exitosa",
+      detail: "Provincia eliminada",
       life: 3000,
     });
   };
@@ -227,7 +227,7 @@ const Crud = () => {
         onClick={hideDeleteProductDialog}
       />
       <Button
-        label="Yes"
+        label="Si"
         icon="pi pi-check"
         className="p-button-text"
         onClick={deleteProduct}
@@ -243,7 +243,7 @@ const Crud = () => {
         onClick={hideDeleteProductsDialog}
       />
       <Button
-        label="Yes"
+        label="Si"
         icon="pi pi-check"
         className="p-button-text"
         onClick={deleteSelectedProducts}
@@ -270,7 +270,7 @@ const Crud = () => {
             className="datatable-responsive"
             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
             globalFilter={globalFilter}
-            emptyMessage="No se han podido cargar las provincias."
+            emptyMessage="Registros no encontrados."
             header={header}
             responsiveLayout="scroll"
           >
@@ -314,7 +314,7 @@ const Crud = () => {
                 })}
               />
               {submitted && !product.nombre && (
-                <small className="p-invalid">Name is required.</small>
+                <small className="p-invalid">Se requiere el nombre de la provicia.</small>
               )}
             </div>
           </Dialog>
@@ -322,7 +322,7 @@ const Crud = () => {
           <Dialog
             visible={deleteProductDialog}
             style={{ width: "450px" }}
-            header="Confirm"
+            header="Confirmar"
             modal
             footer={deleteProductDialogFooter}
             onHide={hideDeleteProductDialog}
@@ -334,7 +334,7 @@ const Crud = () => {
               />
               {product && (
                 <span>
-                  Are you sure you want to delete <b>{product.nombre}</b>?
+                  Estas seguro de eliminar <b>{product.nombre}</b>?
                 </span>
               )}
             </div>

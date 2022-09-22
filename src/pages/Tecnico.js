@@ -9,22 +9,53 @@ import { Rating } from "primereact/rating";
 import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { ProductService } from "../service/ProductService";
+import * as API from "../service/TecnicoService";
+import * as APICiudad from "../service/ProductService";
+
 import { Dropdown } from "primereact/dropdown";
 
 const Tecnico = () => {
-  let emptyProduct = {
-    id: 0,
+  let emptyTecnico = {
+    id: null,
+    cedula: "",
     nombre: "",
-    provincia: { id: null, nombre: "" },
+    apellido: "",
+    email: "",
+    telefono: "",
+    direccion: "",
+    ciudad: {
+      id: null,
+      nombre: "",
+      provincia: {
+        id: null,
+        nombre: "",
+      },
+    },
+    empresa: {
+      id: null,
+      ruc: "",
+      nombre: "",
+      direccion: "",
+      ciudad: {
+        id: null,
+        nombre: "",
+        provincia: {
+          id: null,
+          nombre: "",
+        },
+      },
+      telefono: "",
+      email: "",
+      porcentajeIVA: "",
+    },
   };
 
-  const [products, setProducts] = useState(null);
-  const [productDialog, setProductDialog] = useState(false);
+  const [tecnicos, setTecnicos] = useState(null);
+  const [tecnicoDialog, setTecnicoDialog] = useState(false);
   const [deleteProductDialog, setDeleteProductDialog] = useState(false);
   const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
-  const [product, setProduct] = useState(emptyProduct);
-  const [selectedProducts, setSelectedProducts] = useState(null);
+  const [tecnico, setTecnico] = useState(emptyTecnico);
+  const [selectedTecnicos, setSelectedTecnicos] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
@@ -33,305 +64,176 @@ const Tecnico = () => {
   const [dropdownItem, setDropdownItem] = useState(null);
   const [dropdownItems, setDropdownItems] = useState(null);
 
+
   useEffect(() => {
-    const productService = new ProductService();
-    productService.getCuidad().then((data) => setProducts(data));
-    productService.getProducts().then((data) => setDropdownItems(data));
-  }, []);
+    (
+      async () => {
+        const response = await fetch("http://localhost:9090/api/v1.0/tecnico", {
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
 
-  const formatCurrency = (value) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    });
+        const content = await response.json();
+
+        setTecnicos(content);
+      }
+    )();
+  });
+  useEffect(() => {
+    (
+      async () => {
+        const response = await fetch("http://localhost:9090/api/v1.0/ciudad", {
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        const content = await response.json();
+
+        setDropdownItems(content);
+      }
+    )();
+  });
+  const onInputChange = (e, name) => {
+    const val = (e.target && e.target.value) || "";
+    let _product = { ...tecnico };
+    _product[`${name}`] = val;
+
+    setTecnico(_product);
   };
-
   const openNew = () => {
-    setProduct(emptyProduct);
+    setTecnico(emptyTecnico);
     setSubmitted(false);
-    setProductDialog(true);
+    setTecnicoDialog(true);
   };
 
   const hideDialog = () => {
     setSubmitted(false);
-    setProductDialog(false);
+    setTecnicoDialog(false);
   };
-
-  const hideDeleteProductDialog = () => {
-    setDeleteProductDialog(false);
-  };
-
   const hideDeleteProductsDialog = () => {
     setDeleteProductsDialog(false);
   };
 
   const saveProduct = () => {
     setSubmitted(true);
-    const productService = new ProductService();
 
-    if (product.nombre.trim()) {
-      let _products = [...products];
-      let _product = { ...product };
-      if (product.id) {
-        const index = findIndexById(product.id);
+    if (tecnico.nombre.trim()) {
+      let _products = [...tecnicos];
+      let _product = { ...tecnico };
+      if (tecnico.id) {
+        const index = findIndexById(tecnico.id);
 
         _products[index] = _product;
 
-        productService.putCiudad(_product);
-
+        API.putTecnicos(tecnico.id,{cedula: tecnico.cedula, nombre: tecnico.nombre, apellido: tecnico.apellido, email: tecnico.email, telefono: tecnico.telefono, direccion: tecnico.direccion, ciudad_id: dropdownItem.id, empresa_id: 1});
         toast.current.show({
           severity: "success",
           summary: "Successful",
-          detail: "Product Updated",
+          detail: "Técnico actualizado",
           life: 3000,
         });
       } else {
-        productService.postCiudad({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
-
-        // _product.id = createId();
-        // _product.image = "product-placeholder.svg";
-        _products.push({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
+        API.postTecnicos({cedula: tecnico.cedula, nombre: tecnico.nombre, apellido: tecnico.apellido, email: tecnico.email, telefono: tecnico.telefono, direccion: tecnico.direccion, ciudad_id: dropdownItem.id, empresa_id: 1});
+        _products.push(_product);
         toast.current.show({
           severity: "success",
           summary: "Successful",
-          detail: "Product Created",
+          detail: "Técnico creado",
           life: 3000,
         });
       }
 
-      setProducts(_products);
-      setProductDialog(false);
-      setProduct(emptyProduct);
+      setTecnicos(_products);
+      setTecnicoDialog(false);
+      setTecnico(emptyTecnico);
     }
   };
+  const findIndexById = (id) => {
+    let index = -1;
+    for (let i = 0; i < tecnicos.length; i++) {
+      if (tecnicos[i].id === id) {
+        index = i;
+        break;
+      }
+    }
 
+    return index;
+  };
+  
   const editProduct = (product) => {
-    setProduct({ ...product });
-    setProductDialog(true);
+    setTecnico({ ...product });
+    setTecnicoDialog(true);
+  };
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <div className="actions">
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editProduct(rowData)}
+        />
+      </div>
+    );
   };
 
-  const confirmDeleteProduct = (product) => {
-    setProduct(product);
-    setDeleteProductDialog(true);
-  };
-
-  const deleteProduct = () => {
-    const ciudad = ProductService();
-    ciudad.deleteCiudad(product.id)
-    let _products = products.filter((val) => val.id !== product.id);
-    setProducts(_products);
-    setDeleteProductDialog(false);
-    setProduct(emptyProduct);
+  const deleteSelectedProducts = () => {
+    let _products = tecnicos.filter((val) => !selectedTecnicos.includes(val));
+    setTecnicos(_products);
+    setDeleteProductsDialog(false);
+    setSelectedTecnicos(null);
     toast.current.show({
       severity: "success",
       summary: "Successful",
-      detail: "Product Deleted",
+      detail: "Técnicos eliminados",
       life: 3000,
     });
   };
-
-  const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < products.length; i++) {
-      if (products[i].id === id) {
-        index = i;
-        break;
-    }
-  }
-
-  return index;
-};
-
-const createId = () => {
-  let id = "";
-  let chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 5; i++) {
-    id += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return id;
-};
-
-const exportCSV = () => {
-  dt.current.exportCSV();
-};
-
-const confirmDeleteSelected = () => {
-  setDeleteProductsDialog(true);
-};
-
-const deleteSelectedProducts = () => {
-  let _products = products.filter((val) => !selectedProducts.includes(val));
-  setProducts(_products);
-  setDeleteProductsDialog(false);
-  setSelectedProducts(null);
-  toast.current.show({
-    severity: "success",
-    summary: "Successful",
-    detail: "Products Deleted",
-    life: 3000,
-  });
-};
-
-const onCategoryChange = (e) => {
-  let _product = { ...product };
-  _product["category"] = e.value;
-  setProduct(_product);
-};
-
-const onInputChange = (e, name) => {
-  const val = (e.target && e.target.value) || "";
-  let _product = { ...product };
-  _product[`${name}`] = val;
-
-  setProduct(_product);
-};
-
-const onInputNumberChange = (e, name) => {
-  const val = e.value || 0;
-  let _product = { ...product };
-  _product[`${name}`] = val;
-
-  setProduct(_product);
-};
-
-const leftToolbarTemplate = () => {
-  return (
-    <React.Fragment>
-      <div className="my-2">
-        <Button
-          label="Nuevo"
-          icon="pi pi-plus"
-          className="p-button-success mr-2"
-          onClick={openNew}
-        />
-      </div>
-    </React.Fragment>
-  );
-};
-
-const rightToolbarTemplate = () => {
-  return (
-    <React.Fragment>
-      <FileUpload
-        mode="basic"
-        accept="image/*"
-        maxFileSize={1000000}
-        label="Import"
-        chooseLabel="Import"
-        className="mr-2 inline-block"
+  const leftToolbarTemplate = () => {
+    return (
+          <Button
+            label="Nuevo"
+            icon="pi pi-plus"
+            className="p-button-success mr-2"
+            onClick={openNew}
+          />
+    );
+  };
+  const productDialogFooter = (
+    <>
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDialog}
       />
       <Button
-        label="Export"
-        icon="pi pi-upload"
-        className="p-button-help"
-        onClick={exportCSV}
-      />
-    </React.Fragment>
-  );
-};
-
-const codeBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Code</span>
-      {rowData.id}
-    </>
-  );
-};
-
-const nameBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Ciudad</span>
-      {rowData.nombre}
-    </>
-  );
-};
-
-const provinciaBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Provincia</span>
-      {rowData.provincia.nombre}
-    </>
-  );
-};
-
-const imageBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Image</span>
-      <img
-        src={`assets/demo/images/product/${rowData.image}`}
-        alt={rowData.image}
-        className="shadow-2"
-        width="100"
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={saveProduct}
       />
     </>
   );
-};
-
-const priceBodyTemplate = (rowData) => {
-  return (
+  
+  const deleteProductsDialogFooter = (
     <>
-      <span className="p-column-title">Price</span>
-      {formatCurrency(rowData.price)}
-    </>
-  );
-};
-
-const categoryBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Category</span>
-      {rowData.category}
-    </>
-  );
-};
-
-const ratingBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Reviews</span>
-      <Rating value={rowData.rating} readonly cancel={false} />
-    </>
-  );
-};
-
-const statusBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Status</span>
-      <span
-        className={`product-badge status-${rowData.inventoryStatus.toLowerCase()}`}
-      >
-        {rowData.inventoryStatus}
-      </span>
-    </>
-  );
-};
-
-const actionBodyTemplate = (rowData) => {
-  return (
-    <div className="actions">
       <Button
-        icon="pi pi-pencil"
-        className="p-button-rounded p-button-success mr-2"
-        onClick={() => editProduct(rowData)}
+        label="No"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDeleteProductsDialog}
       />
       <Button
-        icon="pi pi-trash"
-        className="p-button-rounded p-button-warning mt-2"
-        onClick={() => confirmDeleteProduct(rowData)}
+        label="Si"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={deleteSelectedProducts}
       />
-    </div>
+    </>
   );
-};
-
-const header = (
+  const header = (
   <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-    <h5 className="m-0">Ciudades</h5>
+    <h5 className="m-0">Tecnicos</h5>
     <span className="block mt-2 md:mt-0 p-input-icon-left">
       <i className="pi pi-search" />
       <InputText
@@ -343,203 +245,201 @@ const header = (
   </div>
 );
 
-const productDialogFooter = (
-  <>
-    <Button
-      label="Cancelar"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDialog}
-    />
-    <Button
-      label="Guardar"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={saveProduct}
-    />
-  </>
-);
-const deleteProductDialogFooter = (
-  <>
-    <Button
-      label="No"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDeleteProductDialog}
-    />
-    <Button
-      label="Yes"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={deleteProduct}
-    />
-  </>
-);
-const deleteProductsDialogFooter = (
-  <>
-    <Button
-      label="No"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDeleteProductsDialog}
-    />
-    <Button
-      label="Yes"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={deleteSelectedProducts}
-    />
-  </>
-);
-
-return (
-  <div className="grid crud-demo">
-    <div className="col-12">
-      <div className="card">
-        <Toast ref={toast} />
-        <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
-
-        <DataTable
-          ref={dt}
-          value={products}
-          selection={selectedProducts}
-          onSelectionChange={(e) => setSelectedProducts(e.value)}
-          dataKey="id"
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          className="datatable-responsive"
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          globalFilter={globalFilter}
-          emptyMessage="No products found."
-          header={header}
-          responsiveLayout="scroll"
-        >
-          <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}>
-          </Column>
-          <Column
-            field="id"
-            header="Id"
-            body={codeBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
+  return (
+    <div className="grid crud-demo">
+      <div className="col-12">
+        <div className="card">
+          <Toast ref={toast} />
+          <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
+          <DataTable
+            value={tecnicos}
+            selectionMode="single"
+            responsiveLayout="scroll"
+            emptyMessage="No se encontro los registros."
+            paginator
+            rows={5}
+            globalFilter={globalFilter}
+            header={header}
           >
-          </Column>
-          <Column
-            field="nombre"
-            header="Nombre Cuidad"
-            body={nameBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
+            <Column
+              field="cedula"
+              header="Cedula"
+              headerStyle={{ width: "8%", minWidth: "8rem" }}
+            />
+            <Column
+              field="nombre"
+              header="Nombres"
+              headerStyle={{ minWidth: "10rem" }}
+            />
+            <Column
+              field="apellido"
+              header="Apellidos"
+              headerStyle={{ minWidth: "10rem" }}
+            />
+            <Column
+              field="telefono"
+              header="Celular"
+              headerStyle={{ minWidth: "7rem" }}
+            />
+            <Column
+              field="email"
+              header="E-mail"
+              headerStyle={{ minWidth: "8rem" }}
+            />
+            <Column
+              field="direccion"
+              header="Direccion"
+              headerStyle={{ minWidth: "8rem" }}
+            />
+            <Column body={actionBodyTemplate}></Column>
+
+          </DataTable>
+
+          <Dialog
+            visible={tecnicoDialog}
+            style={{ width: "450px" }}
+            header="Técnico"
+            modal
+            className="p-fluid"
+            footer={productDialogFooter}
+            onHide={hideDialog}
           >
-          </Column>
-          <Column
-            field="nombre"
-            header="Nombre Provincia"
-            body={provinciaBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
+            <div className="field">
+              <label htmlFor="cedula">Cedula</label>
+              <InputText
+                id="cedula"
+                value={tecnico.cedula}
+                onChange={(e) => onInputChange(e, "cedula")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !tecnico.cedula,
+                })}
+              />
+              {submitted && !tecnico.cedula && (
+                <small className="p-invalid">
+                  El numero de cedula del técnico es necesario.
+                </small>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="name">Nombre</label>
+              <InputText
+                id="nombre"
+                value={tecnico.nombre}
+                onChange={(e) => onInputChange(e, "nombre")}
+                required
+                autoFocus
+                className={classNames({
+                  "p-invalid": submitted && !tecnico.nombre,
+                })}
+              />
+              {submitted && !tecnico.nombre && (
+                <small className="p-invalid">
+                  El nombre del técnico es necesario.
+                </small>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="apellido">Apellido</label>
+              <InputText
+                id="apellido"
+                value={tecnico.apellido}
+                onChange={(e) => onInputChange(e, "apellido")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !tecnico.apellido,
+                })}
+              />
+              {submitted && !tecnico.apellido && (
+                <small className="p-invalid">
+                  El apellido del técnico es necesario.
+                </small>
+              )}
+            </div>
+            
+            <div className="field">
+              <label htmlFor="telefono">Teléfono</label>
+              <InputText
+                id="telefono"
+                value={tecnico.telefono}
+                onChange={(e) => onInputChange(e, "telefono")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !tecnico.telefono,
+                })}
+              />
+              {submitted && !tecnico.telefono && (
+                <small className="p-invalid">
+                  El numero de teléfono del técnico es necesario.
+                </small>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="direccion">Dirección</label>
+              <InputText
+                id="direccion"
+                value={tecnico.direccion}
+                onChange={(e) => onInputChange(e, "direccion")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !tecnico.direccion,
+                })}
+              />
+              {submitted && !tecnico.direccion && (
+                <small className="p-invalid">
+                  La dirección del técnico es necesaria.
+                </small>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="email">E-mail</label>
+              <InputText
+                id="email"
+                value={tecnico.email}
+                onChange={(e) => onInputChange(e, "email")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !tecnico.email,
+                })}
+              />
+              {submitted && !tecnico.email && (
+                <small className="p-invalid">
+                  La dirección e-mail del técnico es necesaria.
+                </small>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="ciudad">Ciudad</label>
+              <Dropdown
+                id="ciudad"
+                value={tecnico.ciudad.nombre}
+                onChange={e => setDropdownItem(e.value)}
+                options={dropdownItems}
+                optionLabel="nombre"
+                placeholder="Selecciona una ciudad"
+              >
+              </Dropdown>
+            </div>
+          </Dialog>
+          <Dialog
+            visible={deleteProductsDialog}
+            style={{ width: "450px" }}
+            header="Confirm"
+            modal
+            footer={deleteProductsDialogFooter}
+            onHide={hideDeleteProductsDialog}
           >
-          </Column>
-          <Column body={actionBodyTemplate}></Column>
-        </DataTable>
-
-        <Dialog
-          visible={productDialog}
-          style={{ width: "450px" }}
-          header="Cuidad"
-          modal
-          className="p-fluid"
-          footer={productDialogFooter}
-          onHide={hideDialog}
-        >
-          {product.image && (
-            <img
-              src={`assets/demo/images/product/${product.image}`}
-              alt={product.image}
-              width="150"
-              className="mt-0 mx-auto mb-5 block shadow-2"
-            />
-          )}
-          <div className="field">
-            <label htmlFor="name">Nombre Cuidad</label>
-            <InputText
-              id="nombre"
-              value={product.nombre}
-              onChange={(e) => onInputChange(e, "nombre")}
-              required
-              autoFocus
-              className={classNames({
-                "p-invalid": submitted && !product.nombre,
-              })}
-            />
-            {submitted && !product.nombre && (
-              <small className="p-invalid">
-                El nombre de la ciudad es requerido.
-              </small>
-            )}
-          </div>
-
-          <div className="field col-12 md:col-6">
-            <label htmlFor="state">Provincia</label>
-            <Dropdown
-              id="state"
-              value={dropdownItem}
-              onChange={(e) => setDropdownItem(e.value)}
-              options={dropdownItems}
-              optionLabel="nombre"
-              placeholder="Select One"
-            >
-            </Dropdown>
-          </div>
-        </Dialog>
-
-        <Dialog
-          visible={deleteProductDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductDialogFooter}
-          onHide={hideDeleteProductDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {product && (
-              <span>
-                Are you sure you want to delete <b>{product.name}</b>?
-              </span>
-            )}
-          </div>
-        </Dialog>
-
-        <Dialog
-          visible={deleteProductsDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductsDialogFooter}
-          onHide={hideDeleteProductsDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {product && (
-              <span>
-                Are you sure you want to delete the selected products?
-              </span>
-            )}
-          </div>
-        </Dialog>
+            <div className="flex align-items-center justify-content-center">
+              <i
+                className="pi pi-exclamation-triangle mr-3"
+                style={{ fontSize: "2rem" }}
+              />
+              {tecnico && <span>Está seguro de borrar estos técnicos?</span>}
+            </div>
+          </Dialog>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
-
-const comparisonFn = function (prevProps, nextProps) {
-return prevProps.location.pathname === nextProps.location.pathname;
-};
-
-export default React.memo(Tecnico, comparisonFn);
+export default Tecnico;

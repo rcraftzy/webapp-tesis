@@ -10,7 +10,7 @@ import { AppConfig } from "../AppConfig";
 import PrimeReact from "primereact/api";
 import { Tooltip } from "primereact/tooltip";
 
-const Layout = ({ children }) => {
+const LayoutAdmin = ({ children }) => {
   const [layoutMode, setLayoutMode] = useState("static");
   const [layoutColorMode, setLayoutColorMode] = useState("light");
   const [inputStyle, setInputStyle] = useState("outlined");
@@ -108,6 +108,7 @@ const Layout = ({ children }) => {
 
     event.preventDefault();
   };
+
   const onMenuItemClick = (event) => {
     if (!event.item.items) {
       setOverlayMenuActive(false);
@@ -117,40 +118,31 @@ const Layout = ({ children }) => {
   const isDesktop = () => {
     return window.innerWidth >= 992;
   };
+
   const menu = [
     {
-      label: "Empresa",
-      items: [
-        {
-          label: "Configuración y miembros",
-          icon: "pi pi-fw pi-cog",
-          to: "/empresa",
-        },
-        {
-          label: "Dashboard",
-          icon: "pi pi-fw pi-home",
-          to: "/dashboard",
-        },
-      ],
+      label: "Home",
+      items: [{
+        label: "Dashboard",
+        icon: "pi pi-fw pi-home",
+        to: "/dashboard/admin",
+      }, {
+        label: "Configuración y miembros",
+        icon: "pi pi-fw pi-user-edit",
+        to: "/empresa",
+      }],
     },
     {
-      label: "Registros",
-      icon: "pi pi-fw pi-clone",
+      label: "Pages",
       items: [
         {
           label: "Provincia",
-          icon: "pi pi-fw pi-map",
+          icon: "pi pi-fw pi-user-edit",
           to: "/provincia",
         },
-        { label: "Ciudad", icon: "pi pi-fw pi-map-marker", to: "/cuidad" },
-        {
-          label: "Orden de servicio",
-          icon: "pi pi-fw pi-list",
-          to: "/orden-de-servicio",
-        },
+        { label: "Ciudad", icon: "pi pi-fw pi-user-edit", to: "/cuidad" },
         { label: "Técnico", icon: "pi pi-fw pi-user-edit", to: "/tecnico" },
-        { label: "Cliente", icon: "pi pi-fw pi-id-card", to: "/cliente" },
-        { label: "Producto", icon: "pi pi-fw pi-table", to: "/producto" },
+        { label: "Producto", icon: "pi pi-fw pi-user-edit", to: "/producto" },
       ],
     },
   ];
@@ -243,4 +235,4 @@ const Layout = ({ children }) => {
   );
 };
 
-export default Layout;
+export default LayoutAdmin;

@@ -13,11 +13,11 @@ import { DataView, DataViewLayoutOptions } from "primereact/dataview";
 import { ProductService } from "../service/ProductService";
 import { OrdenServicioService } from "../service/OrdenServicioService";
 import { ClienteService } from "../service/ClienteService";
-import { TecnicoService } from "../service/TecnicoService";
+import { getTecnicos } from "../service/TecnicoService";
 import { EstadoService } from "../service/EstadoService";
 import { ProductoService } from "../service/ProductoService";
 
-import { Tag } from 'primereact/tag';
+import { Tag } from "primereact/tag";
 // Import for form
 import { InputTextarea } from "primereact/inputtextarea";
 import { AutoComplete } from "primereact/autocomplete";
@@ -158,8 +158,7 @@ const OrdenServicio = () => {
     const clienteService = new ClienteService();
     clienteService.getClientes().then((data) => setClientes(data));
 
-    const tecnicoService = new TecnicoService();
-    tecnicoService.getTecnicos().then((data) => setTecnicos(data));
+    getTecnicos().then((data) => setTecnicos(data));
 
     const estadoService = new EstadoService();
     estadoService.getEstados().then((data) => setEstados(data));
@@ -339,24 +338,6 @@ const OrdenServicio = () => {
     return index;
   };
 
-  const createId = () => {
-    let id = "";
-    let chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (let i = 0; i < 5; i++) {
-      id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-  };
-
-  const exportCSV = () => {
-    dt.current.exportCSV();
-  };
-
-  const confirmDeleteSelected = () => {
-    setDeleteProductsDialog(true);
-  };
-
   const deleteSelectedProducts = () => {
     let _ordenesServicio = ordenesServicio.filter((val) =>
       !selectedOrdenesServicio.includes(val)
@@ -396,16 +377,14 @@ const OrdenServicio = () => {
 
   const leftToolbarTemplate = () => {
     return (
-      <React.Fragment>
-        <div className="my-2">
-          <Button
-            label="Nuevo"
-            icon="pi pi-plus"
-            className="p-button-success mr-2"
-            onClick={openNew}
-          />
-        </div>
-      </React.Fragment>
+      <div>
+        <Button
+          label="Nuevo"
+          icon="pi pi-plus"
+          className="p-button-success mr-2"
+          onClick={openNew}
+        />
+      </div>
     );
   };
 
@@ -478,7 +457,16 @@ const OrdenServicio = () => {
               </div>
             </div>
             <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
-              <Tag className="mr-2" severity={`${data.orden_servicio.estado_orden_servicio.state == 'En proceso' ? "warning" : ""}`} value={data.orden_servicio.estado_orden_servicio.state}/>
+              <Tag
+                className="mr-2"
+                severity={`${
+                  data.orden_servicio.estado_orden_servicio.state ==
+                      "En proceso"
+                    ? "warning"
+                    : ""
+                }`}
+                value={data.orden_servicio.estado_orden_servicio.state}
+              />
               <span className="p-buttonset">
                 <Button label="Editar" icon="pi pi-pencil" />
                 <Button label="Eliminar" icon="pi pi-trash" />
@@ -557,7 +545,7 @@ const OrdenServicio = () => {
         </div>
         <Dialog
           visible={productDialog}
-          style={{ width: "850px" }}
+          style={{ width: "1000px" }}
           header="Orden servicio"
           modal
           className="p-fluid"
@@ -575,309 +563,354 @@ const OrdenServicio = () => {
           <div className="field">
             <div className="grid p-fluid">
               <div className="col-12 md:col-6">
-                <div className="card">
-                  <h5>Cliente</h5>
-                  <Button
-                    type="button"
-                    label="DataTable"
-                    onClick={toggleDataTable}
-                    className="p-button-success"
-                  />
-                  <OverlayPanel
-                    ref={op2}
-                    appendTo={document.body}
-                    showCloseIcon
-                    id="overlay_panel"
-                    style={{ width: "450px" }}
+                <h5>Cliente</h5>
+                <Button
+                  type="button"
+                  label="DataTable"
+                  onClick={toggleDataTable}
+                  className="p-button-success"
+                />
+                <OverlayPanel
+                  ref={op2}
+                  appendTo={document.body}
+                  showCloseIcon
+                  id="overlay_panel"
+                  style={{ width: "450px" }}
+                >
+                  <DataTable
+                    value={clientes}
+                    selection={selectedProduct}
+                    onSelectionChange={(e) => setSelectedProduct(e.value)}
+                    selectionMode="single"
+                    responsiveLayout="scroll"
+                    paginator
+                    rows={5}
+                    onRowSelect={onProductSelect}
                   >
-                    <DataTable
-                      value={clientes}
-                      selection={selectedProduct}
-                      onSelectionChange={(e) => setSelectedProduct(e.value)}
-                      selectionMode="single"
-                      responsiveLayout="scroll"
-                      paginator
-                      rows={5}
-                      onRowSelect={onProductSelect}
-                    >
-                      <Column
-                        field="dni"
-                        header="Cedula"
-                        sortable
-                        headerStyle={{ minWidth: "10rem" }}
-                      />
-                      <Column
-                        field="nombres"
-                        header="Nombres"
-                        sortable
-                        headerStyle={{ minWidth: "10rem" }}
-                      />
-                      <Column
-                        field="apellidos"
-                        header="Apellidos"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
+                    <Column
+                      field="dni"
+                      header="Cedula"
+                      sortable
+                      headerStyle={{ minWidth: "10rem" }}
+                    />
+                    <Column
+                      field="nombres"
+                      header="Nombres"
+                      sortable
+                      headerStyle={{ minWidth: "10rem" }}
+                    />
+                    <Column
+                      field="apellidos"
+                      header="Apellidos"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
 
-                      <Column
-                        field="celular"
-                        header="Celular"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="telefono"
-                        header="Telefono"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="email"
-                        header="E-mail"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="direccion"
-                        header="Direccion"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                    </DataTable>
-                  </OverlayPanel>
+                    <Column
+                      field="celular"
+                      header="Celular"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="telefono"
+                      header="Telefono"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="email"
+                      header="E-mail"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="direccion"
+                      header="Direccion"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                  </DataTable>
+                </OverlayPanel>
 
-                  <h5>Tecnico</h5>
-                  <Button
-                    type="button"
-                    label="DataTable"
-                    onClick={toggleDataTableTecnico}
-                    className="p-button-success"
-                  />
-                  <OverlayPanel
-                    ref={op1}
-                    appendTo={document.body}
-                    showCloseIcon
-                    id="overlay_panel"
-                    style={{ width: "450px" }}
+                <h5>Tecnico</h5>
+                <Button
+                  type="button"
+                  label="DataTable"
+                  onClick={toggleDataTableTecnico}
+                  className="p-button-success"
+                />
+                <OverlayPanel
+                  ref={op1}
+                  appendTo={document.body}
+                  showCloseIcon
+                  id="overlay_panel"
+                  style={{ width: "450px" }}
+                >
+                  <DataTable
+                    value={tecnicos}
+                    selection={selectedTecnico}
+                    onSelectionChange={(e) => setSelectedTecnico(e.value)}
+                    selectionMode="single"
+                    responsiveLayout="scroll"
+                    paginator
+                    rows={5}
+                    onRowSelect={onTecnicoSelect}
                   >
-                    <DataTable
-                      value={tecnicos}
-                      selection={selectedTecnico}
-                      onSelectionChange={(e) => setSelectedTecnico(e.value)}
-                      selectionMode="single"
-                      responsiveLayout="scroll"
-                      paginator
-                      rows={5}
-                      onRowSelect={onTecnicoSelect}
-                    >
-                      <Column
-                        field="cedula"
-                        header="Cedula"
-                        sortable
-                        headerStyle={{ minWidth: "10rem" }}
-                      />
-                      <Column
-                        field="nombre"
-                        header="Nombres"
-                        sortable
-                        headerStyle={{ minWidth: "10rem" }}
-                      />
-                      <Column
-                        field="apellido"
-                        header="Apellidos"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
+                    <Column
+                      field="cedula"
+                      header="Cedula"
+                      sortable
+                      headerStyle={{ minWidth: "10rem" }}
+                    />
+                    <Column
+                      field="nombre"
+                      header="Nombres"
+                      sortable
+                      headerStyle={{ minWidth: "10rem" }}
+                    />
+                    <Column
+                      field="apellido"
+                      header="Apellidos"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
 
-                      <Column
-                        field="celular"
-                        header="Celular"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="telefono"
-                        header="celular"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="email"
-                        header="E-mail"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="direccion"
-                        header="Direccion"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                    </DataTable>
-                  </OverlayPanel>
-                  <h5>Estado</h5>
-                  <Dropdown
-                    value={dropdownValue}
-                    onChange={(e) => setDropdownValue(e.value)}
-                    options={estados}
-                    optionLabel="state"
-                    placeholder="Selecciona un estado"
-                  />
-                  <h5>Precio</h5>
-                  <div className="grid p-fluid">
-                    <div className="col-12 md:col-6">
-                      <div className="p-inputgroup">
-                        <span className="p-float-label">
-                          <InputText placeholder="Sub total sin IVA" />
-                          <span className="p-inputgroup-addon">$</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="col-12 md:col-6">
-                      <div className="p-inputgroup">
-                        <InputText placeholder="Valor IVA" />
-                        <span className="p-inputgroup-addon">%</span>
-                      </div>
-                    </div>
-
-                    <div className="col-12 md:col-6">
-                      <div className="p-inputgroup">
+                    <Column
+                      field="celular"
+                      header="Celular"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="telefono"
+                      header="celular"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="email"
+                      header="E-mail"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="direccion"
+                      header="Direccion"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                  </DataTable>
+                </OverlayPanel>
+                <h5>Estado</h5>
+                <Dropdown
+                  value={dropdownValue}
+                  onChange={(e) => setDropdownValue(e.value)}
+                  options={estados}
+                  optionLabel="state"
+                  placeholder="Selecciona un estado"
+                />
+                <h5>Precio</h5>
+                <div className="grid p-fluid">
+                  <div className="col-12 md:col-6">
+                    <div className="p-inputgroup">
+                      <span className="p-float-label">
                         <InputText placeholder="Sub total sin IVA" />
                         <span className="p-inputgroup-addon">$</span>
-                      </div>
-                    </div>
-
-                    <div className="col-12 md:col-6">
-                      <div className="p-inputgroup">
-                        <InputText placeholder="Descuento" />
-                        <span className="p-inputgroup-addon">%</span>
-                      </div>
-                    </div>
-
-                    <div className="col-12 md:col-6">
-                      <div className="p-inputgroup">
-                        <InputText placeholder="Total" disabled />
-                        <span className="p-inputgroup-addon">$</span>
-                      </div>
+                      </span>
                     </div>
                   </div>
 
-                  <h5>Observaciones</h5>
-                  <InputTextarea
-                    placeholder="Observacion..."
-                    autoResize
-                    rows="3"
-                    cols="30"
-                  />
+                  <div className="col-12 md:col-6">
+                    <div className="p-inputgroup">
+                      <InputText placeholder="Valor IVA" />
+                      <span className="p-inputgroup-addon">%</span>
+                    </div>
+                  </div>
 
-                  <h5>Fecha de emision</h5>
-                  <Calendar
-                    showIcon
-                    showButtonBar
-                    value={calendarValue}
-                    onChange={(e) => setCalendarValue(e.value)}
-                  >
-                  </Calendar>
+                  <div className="col-12 md:col-6">
+                    <div className="p-inputgroup">
+                      <InputText placeholder="Sub total sin IVA" />
+                      <span className="p-inputgroup-addon">$</span>
+                    </div>
+                  </div>
+
+                  <div className="col-12 md:col-6">
+                    <div className="p-inputgroup">
+                      <InputText placeholder="Descuento" />
+                      <span className="p-inputgroup-addon">%</span>
+                    </div>
+                  </div>
+
+                  <div className="col-12 md:col-6">
+                    <div className="p-inputgroup">
+                      <InputText placeholder="Total" disabled />
+                      <span className="p-inputgroup-addon">$</span>
+                    </div>
+                  </div>
                 </div>
+
+                <h5>Observaciones</h5>
+                <InputTextarea
+                  placeholder="Observacion..."
+                  autoResize
+                  rows="3"
+                  cols="30"
+                />
+
+                <h5>Fecha de emision</h5>
+                <Calendar
+                  showIcon
+                  showButtonBar
+                  value={calendarValue}
+                  onChange={(e) => setCalendarValue(e.value)}
+                >
+                </Calendar>
               </div>
 
               <div className="col-12 md:col-6">
-                <div className="card">
-                  <h5>Diagnostico en recepción</h5>
-                  <InputTextarea
-                    placeholder="Decripcion del cliente..."
-                    autoResize
-                    rows="3"
-                    cols="30"
-                  />
-                  <h5>Diagnostico del tecnico</h5>
-                  <InputTextarea
-                    placeholder="Observaciones..."
-                    autoResize
-                    rows="3"
-                    cols="30"
-                  />
-                  <h5>Descripcion del diagnostico tecnico</h5>
-                  <InputTextarea
-                    placeholder="Descripcion..."
-                    autoResize
-                    rows="3"
-                    cols="30"
-                  />
+                <h5>Diagnostico en recepción</h5>
+                <InputTextarea
+                  placeholder="Decripcion del cliente..."
+                  autoResize
+                  rows="3"
+                  cols="30"
+                />
+                <h5>Diagnostico del tecnico</h5>
+                <InputTextarea
+                  placeholder="Observaciones..."
+                  autoResize
+                  rows="3"
+                  cols="30"
+                />
+                <h5>Descripcion del diagnostico tecnico</h5>
+                <InputTextarea
+                  placeholder="Descripcion..."
+                  autoResize
+                  rows="3"
+                  cols="30"
+                />
 
-                  <h5>Producto</h5>
-                  <Button
-                    type="button"
-                    label="DataTable"
-                    onClick={toggleDataTableProducto}
-                    className="p-button-success"
-                  />
-                  <OverlayPanel
-                    ref={op3}
-                    appendTo={document.body}
-                    showCloseIcon
-                    id="overlay_panel"
-                    style={{ width: "450px" }}
+                <h5>Producto</h5>
+                <Button
+                  type="button"
+                  label="DataTable"
+                  onClick={toggleDataTableProducto}
+                  className="p-button-success"
+                />
+                <OverlayPanel
+                  ref={op3}
+                  appendTo={document.body}
+                  showCloseIcon
+                  id="overlay_panel"
+                  style={{ width: "450px" }}
+                >
+                  <DataTable
+                    value={productos}
+                    selection={selectedProducto}
+                    onSelectionChange={(e) => setSelectedProducto(e.value)}
+                    selectionMode="single"
+                    responsiveLayout="scroll"
+                    paginator
+                    rows={5}
+                    onRowSelect={onProductoSelect}
                   >
-                    <DataTable
-                      value={productos}
-                      selection={selectedProducto}
-                      onSelectionChange={(e) => setSelectedProducto(e.value)}
-                      selectionMode="single"
-                      responsiveLayout="scroll"
-                      paginator
-                      rows={5}
-                      onRowSelect={onProductoSelect}
-                    >
-                      <Column
-                        field="cedula"
-                        header="Cedula"
-                        sortable
-                        headerStyle={{ minWidth: "10rem" }}
-                      />
-                      <Column
-                        field="nombre"
-                        header="Nombres"
-                        sortable
-                        headerStyle={{ minWidth: "10rem" }}
-                      />
-                      <Column
-                        field="apellido"
-                        header="Apellidos"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
+                    <Column
+                      field="cedula"
+                      header="Cedula"
+                      sortable
+                      headerStyle={{ minWidth: "10rem" }}
+                    />
+                    <Column
+                      field="nombre"
+                      header="Nombres"
+                      sortable
+                      headerStyle={{ minWidth: "10rem" }}
+                    />
+                    <Column
+                      field="apellido"
+                      header="Apellidos"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
 
-                      <Column
-                        field="celular"
-                        header="Celular"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="telefono"
-                        header="celular"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="email"
-                        header="E-mail"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                      <Column
-                        field="direccion"
-                        header="Direccion"
-                        sortable
-                        headerStyle={{ minWidth: "8rem" }}
-                      />
-                    </DataTable>
-                  </OverlayPanel>
-                </div>
+                    <Column
+                      field="celular"
+                      header="Celular"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="telefono"
+                      header="celular"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="email"
+                      header="E-mail"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                    <Column
+                      field="direccion"
+                      header="Direccion"
+                      sortable
+                      headerStyle={{ minWidth: "8rem" }}
+                    />
+                  </DataTable>
+                </OverlayPanel>
               </div>
             </div>
+            <DataTable
+              value={tecnicos}
+              selection={selectedTecnico}
+              responsiveLayout="scroll"
+              paginator
+              rows={5}
+            >
+              <Column
+                field="cedula"
+                header="Código"
+                headerStyle={{ minWidth: "7rem" }}
+              />
+              <Column
+                field="nombre"
+                header="Descripción"
+                headerStyle={{ minWidth: "14rem" }}
+              />
+              <Column
+                field="apellido"
+                header="Cantidad"
+                headerStyle={{ minWidth: "7rem" }}
+              />
+
+              <Column
+                field="celular"
+                header="Precio Unitario"
+                headerStyle={{ minWidth: "8rem" }}
+              />
+              <Column
+                field="telefono"
+                header="Descuento"
+                headerStyle={{ minWidth: "7rem" }}
+              />
+              <Column
+                field="email"
+                header="% IVA"
+                headerStyle={{ minWidth: "8rem" }}
+              />
+              <Column
+                field="direccion"
+                header="Valor IVA"
+                headerStyle={{ minWidth: "7rem" }}
+              />
+              <Column
+                field="direccion"
+                header="Total"
+                headerStyle={{ minWidth: "8rem" }}
+              />
+            </DataTable>
           </div>
         </Dialog>
 
@@ -914,7 +947,7 @@ const OrdenServicio = () => {
             <i
               className="pi pi-exclamation-triangle mr-3"
               style={{ fontSize: "2rem" }}
-              />
+            />
             {ordenServicio && (
               <span>
                 Are you sure you want to delete the selected products?
@@ -927,8 +960,4 @@ const OrdenServicio = () => {
   );
 };
 
-const comparisonFn = function (prevProps, nextProps) {
-  return prevProps.location.pathname === nextProps.location.pathname;
-};
-
-export default React.memo(OrdenServicio, comparisonFn);
+export default OrdenServicio;

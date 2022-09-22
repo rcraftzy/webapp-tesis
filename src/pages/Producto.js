@@ -4,57 +4,78 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
-import { FileUpload } from "primereact/fileupload";
-import { Rating } from "primereact/rating";
 import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { ProductService } from "../service/ProductService";
-import { Dropdown } from "primereact/dropdown";
+import { ProductoService } from "../service/ProductoService";
+import { InputSwitch } from "primereact/inputswitch";
 
 const Producto = () => {
-  let emptyProduct = {
-    id: 0,
+  let emptyTecnico = {
+    id: null,
+    codigo: "",
     nombre: "",
-    provincia: { id: null, nombre: "" },
+    precioVenta: "",
+    stockMin: "",
+    stockMax: "",
+    stock: "",
+    controlaStock: false,
+    aplicaIva: false,
+    empresa: {
+      id: null,
+      ruc: "",
+      nombre: "",
+      direccion: "",
+      ciudad: {
+        id: null,
+        nombre: "",
+        provincia: {
+          id: null,
+          nombre: "",
+        },
+      },
+    },
   };
 
-  const [products, setProducts] = useState(null);
-  const [productDialog, setProductDialog] = useState(false);
+  const [productos, setProductos] = useState(null);
+  const [productoDialog, setProductoDialog] = useState(false);
   const [deleteProductDialog, setDeleteProductDialog] = useState(false);
   const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
-  const [product, setProduct] = useState(emptyProduct);
-  const [selectedProducts, setSelectedProducts] = useState(null);
+  const [producto, setProducto] = useState(emptyTecnico);
+  const [selectedProductos, setSelectedProductos] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
-
-  const [dropdownItem, setDropdownItem] = useState(null);
-  const [dropdownItems, setDropdownItems] = useState(null);
+  const [switchValue, setSwitchValue] = useState(false);
+  const [aplicaIva, setAlicaIva] = useState(false);
 
   useEffect(() => {
-    const productService = new ProductService();
-    productService.getCuidad().then((data) => setProducts(data));
-    productService.getProducts().then((data) => setDropdownItems(data));
-  }, []);
+    (
+      async () => {
+        const response = await fetch(
+          "http://localhost:9090/api/v1.0/producto",
+          {
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          },
+        );
 
-  const formatCurrency = (value) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    });
-  };
+        const content = await response.json();
 
+        setProductos(content);
+      }
+    )();
+  });
   const openNew = () => {
-    setProduct(emptyProduct);
+    setProducto(emptyTecnico);
     setSubmitted(false);
-    setProductDialog(true);
+    setProductoDialog(true);
   };
 
   const hideDialog = () => {
     setSubmitted(false);
-    setProductDialog(false);
+    setProductoDialog(false);
   };
 
   const hideDeleteProductDialog = () => {
@@ -67,479 +88,442 @@ const Producto = () => {
 
   const saveProduct = () => {
     setSubmitted(true);
-    const productService = new ProductService();
 
-    if (product.nombre.trim()) {
-      let _products = [...products];
-      let _product = { ...product };
-      if (product.id) {
-        const index = findIndexById(product.id);
+    const productoService = new ProductoService();
+    
+    if (producto.nombre.trim()) {
+      let _products = [...productos];
+      let _product = { ...producto };
+      if (producto.id) {
+        const index = findIndexById(producto.id);
 
         _products[index] = _product;
 
-        productService.putCiudad(_product);
-
+        productoService.putProducto(producto.id,{codigo: producto.codigo, nombre: producto.nombre, precioVenta: producto.precioVenta, stockMin: producto.stockMin, stockMax: producto.stockMax, controlaStock: switchValue, aplicaIva: aplicaIva, empresa_id: 1});
         toast.current.show({
           severity: "success",
-          summary: "Successful",
-          detail: "Product Updated",
+          summary: "Petición exitosa",
+          detail: "Técnico actualizado",
           life: 3000,
         });
       } else {
-        productService.postCiudad({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
-
-        // _product.id = createId();
-        // _product.image = "product-placeholder.svg";
-        _products.push({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
+        productoService.postProducto({codigo: producto.codigo, nombre: producto.nombre, precioVenta: parseFloat(producto.precioVenta), stockMin: parseFloat(producto.stockMin), stockMax: parseFloat(producto.stockMax),stock: parseFloat(producto.stock), controlaStock: switchValue, aplicaIva: aplicaIva,empresa_id: 1});
+        _products.push(_product);
         toast.current.show({
           severity: "success",
-          summary: "Successful",
-          detail: "Product Created",
+          summary: "Petición exitosa",
+          detail: "Técnico creado",
           life: 3000,
         });
       }
 
-      setProducts(_products);
-      setProductDialog(false);
-      setProduct(emptyProduct);
+      setProductos(_products);
+      setProductoDialog(false);
+      setProducto(emptyTecnico);
     }
   };
 
   const editProduct = (product) => {
-    setProduct({ ...product });
-    setProductDialog(true);
+    setProducto({ ...product });
+    setProductoDialog(true);
   };
 
   const confirmDeleteProduct = (product) => {
-    setProduct(product);
+    setProducto(product);
     setDeleteProductDialog(true);
   };
 
   const deleteProduct = () => {
-    const ciudad = ProductService();
-    ciudad.deleteCiudad(product.id)
-    let _products = products.filter((val) => val.id !== product.id);
-    setProducts(_products);
+    let _products = productos.filter((val) => val.id !== producto.id);
+    setProductos(_products);
     setDeleteProductDialog(false);
-    setProduct(emptyProduct);
+    setProducto(emptyTecnico);
+    const producserv = new ProductoService();
+    producserv.deleteProductos(producto.id);
     toast.current.show({
       severity: "success",
-      summary: "Successful",
-      detail: "Product Deleted",
+      summary: "Petición exitosa",
+      detail: "Producto eliminado",
       life: 3000,
     });
   };
 
   const findIndexById = (id) => {
     let index = -1;
-    for (let i = 0; i < products.length; i++) {
-      if (products[i].id === id) {
+    for (let i = 0; i < productos.length; i++) {
+      if (productos[i].id === id) {
         index = i;
         break;
+      }
     }
-  }
 
-  return index;
-};
+    return index;
+  };
 
-const createId = () => {
-  let id = "";
-  let chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 5; i++) {
-    id += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return id;
-};
+  const deleteSelectedProducts = () => {
+    let _products = productos.filter((val) => !selectedProductos.includes(val));
+    setProductos(_products);
+    setDeleteProductsDialog(false);
+    setSelectedProductos(null);
+    toast.current.show({
+      severity: "success",
+      summary: "Successful",
+      detail: "Productos eliminados",
+      life: 3000,
+    });
+  };
 
-const exportCSV = () => {
-  dt.current.exportCSV();
-};
+  const onInputChange = (e, name) => {
+    const val = (e.target && e.target.value) || "";
+    let _product = { ...producto };
+    _product[`${name}`] = val;
 
-const confirmDeleteSelected = () => {
-  setDeleteProductsDialog(true);
-};
+    setProducto(_product);
+  };
 
-const deleteSelectedProducts = () => {
-  let _products = products.filter((val) => !selectedProducts.includes(val));
-  setProducts(_products);
-  setDeleteProductsDialog(false);
-  setSelectedProducts(null);
-  toast.current.show({
-    severity: "success",
-    summary: "Successful",
-    detail: "Products Deleted",
-    life: 3000,
-  });
-};
+  const onInputNombreChange = (e, nombre) => {
+    const val = e.value || 0;
+    let _product = { ...producto };
+    _product[`${nombre}`] = val;
 
-const onCategoryChange = (e) => {
-  let _product = { ...product };
-  _product["category"] = e.value;
-  setProduct(_product);
-};
+    setProducto(_product);
+  };
 
-const onInputChange = (e, name) => {
-  const val = (e.target && e.target.value) || "";
-  let _product = { ...product };
-  _product[`${name}`] = val;
-
-  setProduct(_product);
-};
-
-const onInputNumberChange = (e, name) => {
-  const val = e.value || 0;
-  let _product = { ...product };
-  _product[`${name}`] = val;
-
-  setProduct(_product);
-};
-
-const leftToolbarTemplate = () => {
-  return (
-    <React.Fragment>
-      <div className="my-2">
+  const leftToolbarTemplate = () => {
+    return (
+          <Button
+            label="Nuevo"
+            icon="pi pi-plus"
+            className="p-button-success mr-2"
+            onClick={openNew}
+          />
+    );
+  };
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <div className="actions">
         <Button
-          label="Nuevo"
-          icon="pi pi-plus"
-          className="p-button-success mr-2"
-          onClick={openNew}
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editProduct(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-warning mt-2"
+          onClick={() => confirmDeleteProduct(rowData)}
         />
       </div>
-    </React.Fragment>
-  );
-};
+    );
+  };
 
-const rightToolbarTemplate = () => {
-  return (
-    <React.Fragment>
-      <FileUpload
-        mode="basic"
-        accept="image/*"
-        maxFileSize={1000000}
-        label="Import"
-        chooseLabel="Import"
-        className="mr-2 inline-block"
-      />
-      <Button
-        label="Export"
-        icon="pi pi-upload"
-        className="p-button-help"
-        onClick={exportCSV}
-      />
-    </React.Fragment>
-  );
-};
-
-const codeBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Code</span>
-      {rowData.id}
-    </>
-  );
-};
-
-const nameBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Ciudad</span>
-      {rowData.nombre}
-    </>
-  );
-};
-
-const provinciaBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Provincia</span>
-      {rowData.provincia.nombre}
-    </>
-  );
-};
-
-const imageBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Image</span>
-      <img
-        src={`assets/demo/images/product/${rowData.image}`}
-        alt={rowData.image}
-        className="shadow-2"
-        width="100"
-      />
-    </>
-  );
-};
-
-const priceBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Price</span>
-      {formatCurrency(rowData.price)}
-    </>
-  );
-};
-
-const categoryBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Category</span>
-      {rowData.category}
-    </>
-  );
-};
-
-const ratingBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Reviews</span>
-      <Rating value={rowData.rating} readonly cancel={false} />
-    </>
-  );
-};
-
-const statusBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Status</span>
-      <span
-        className={`product-badge status-${rowData.inventoryStatus.toLowerCase()}`}
-      >
-        {rowData.inventoryStatus}
+  const header = (
+    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+      <h5 className="m-0">Productos</h5>
+      <span className="block mt-2 md:mt-0 p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText
+          type="search"
+          onInput={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Buscar..."
+        />
       </span>
-    </>
-  );
-};
-
-const actionBodyTemplate = (rowData) => {
-  return (
-    <div className="actions">
-      <Button
-        icon="pi pi-pencil"
-        className="p-button-rounded p-button-success mr-2"
-        onClick={() => editProduct(rowData)}
-      />
-      <Button
-        icon="pi pi-trash"
-        className="p-button-rounded p-button-warning mt-2"
-        onClick={() => confirmDeleteProduct(rowData)}
-      />
     </div>
   );
-};
 
-const header = (
-  <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-    <h5 className="m-0">Ciudades</h5>
-    <span className="block mt-2 md:mt-0 p-input-icon-left">
-      <i className="pi pi-search" />
-      <InputText
-        type="search"
-        onInput={(e) => setGlobalFilter(e.target.value)}
-        placeholder="Buscar..."
+  const productDialogFooter = (
+    <>
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDialog}
       />
-    </span>
-  </div>
-);
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={saveProduct}
+      />
+    </>
+  );
+  const deleteProductDialogFooter = (
+    <>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDeleteProductDialog}
+      />
+      <Button
+        label="Si"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={deleteProduct}
+      />
+    </>
+  );
+  const deleteProductsDialogFooter = (
+    <>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDeleteProductsDialog}
+      />
+      <Button
+        label="Si"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={deleteSelectedProducts}
+      />
+    </>
+  );
 
-const productDialogFooter = (
-  <>
-    <Button
-      label="Cancelar"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDialog}
-    />
-    <Button
-      label="Guardar"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={saveProduct}
-    />
-  </>
-);
-const deleteProductDialogFooter = (
-  <>
-    <Button
-      label="No"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDeleteProductDialog}
-    />
-    <Button
-      label="Yes"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={deleteProduct}
-    />
-  </>
-);
-const deleteProductsDialogFooter = (
-  <>
-    <Button
-      label="No"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDeleteProductsDialog}
-    />
-    <Button
-      label="Yes"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={deleteSelectedProducts}
-    />
-  </>
-);
+  return (
+    <div className="grid crud-demo">
+      <div className="col-12">
+        <div className="card">
+          <Toast ref={toast} />
+          <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
 
-return (
-  <div className="grid crud-demo">
-    <div className="col-12">
-      <div className="card">
-        <Toast ref={toast} />
-        <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
-
-        <DataTable
-          ref={dt}
-          value={products}
-          selection={selectedProducts}
-          onSelectionChange={(e) => setSelectedProducts(e.value)}
-          dataKey="id"
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          className="datatable-responsive"
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          globalFilter={globalFilter}
-          emptyMessage="No products found."
-          header={header}
-          responsiveLayout="scroll"
-        >
-          <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}>
-          </Column>
-          <Column
-            field="id"
-            header="Id"
-            body={codeBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
+          <DataTable
+            ref={dt}
+            value={productos}
+            selection={selectedProductos}
+            onSelectionChange={(e) => setSelectedProductos(e.value)}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25]}
+            className="datatable-responsive"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            globalFilter={globalFilter}
+            emptyMessage="Registros no encontrados."
+            header={header}
+            responsiveLayout="scroll"
           >
-          </Column>
-          <Column
-            field="nombre"
-            header="Nombre Cuidad"
-            body={nameBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
-          >
-          </Column>
-          <Column
-            field="nombre"
-            header="Nombre Provincia"
-            body={provinciaBodyTemplate}
-            headerStyle={{ width: "14%", minWidth: "10rem" }}
-          >
-          </Column>
-          <Column body={actionBodyTemplate}></Column>
-        </DataTable>
-
-        <Dialog
-          visible={productDialog}
-          style={{ width: "450px" }}
-          header="Cuidad"
-          modal
-          className="p-fluid"
-          footer={productDialogFooter}
-          onHide={hideDialog}
-        >
-          {product.image && (
-            <img
-              src={`assets/demo/images/product/${product.image}`}
-              alt={product.image}
-              width="150"
-              className="mt-0 mx-auto mb-5 block shadow-2"
-            />
-          )}
-          <div className="field">
-            <label htmlFor="name">Nombre Cuidad</label>
-            <InputText
-              id="nombre"
-              value={product.nombre}
-              onChange={(e) => onInputChange(e, "nombre")}
-              required
-              autoFocus
-              className={classNames({
-                "p-invalid": submitted && !product.nombre,
-              })}
-            />
-            {submitted && !product.nombre && (
-              <small className="p-invalid">
-                El nombre de la ciudad es requerido.
-              </small>
-            )}
-          </div>
-
-          <div className="field col-12 md:col-6">
-            <label htmlFor="state">Provincia</label>
-            <Dropdown
-              id="state"
-              value={dropdownItem}
-              onChange={(e) => setDropdownItem(e.value)}
-              options={dropdownItems}
-              optionLabel="nombre"
-              placeholder="Select One"
+            <Column
+              field="codigo"
+              header="Código"
+              headerStyle={{ width: "14%", minWidth: "7rem" }}
             >
-            </Dropdown>
-          </div>
-        </Dialog>
+            </Column>
+            <Column
+              field="nombre"
+              header="Nombre"
+              headerStyle={{ width: "14%", minWidth: "10rem" }}
+            >
+            </Column>
+            <Column
+              field="precioVenta"
+              header="Precio de venta"
+              headerStyle={{ width: "14%", minWidth: "8rem" }}
+            >
+            </Column>
+            <Column
+              field="stockMin"
+              header="Stock Minimo"
+              headerStyle={{ width: "14%", minWidth: "7rem" }}
+            >
+            </Column>
+            <Column
+              field="stockMax"
+              header="Stock Maximo"
+              headerStyle={{ width: "14%", minWidth: "7rem" }}
+            >
+            </Column>
+            <Column
+              field="stock"
+              header="Stock Total"
+              headerStyle={{ width: "14%", minWidth: "7rem" }}
+            >
+            </Column>
+            <Column
+              field="aplicaIva"
+              header="Aplica IVA"
+              headerStyle={{ width: "14%", minWidth: "10rem" }}
+            >
+            </Column>
+            <Column body={actionBodyTemplate}></Column>
+          </DataTable>
 
-        <Dialog
-          visible={deleteProductDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductDialogFooter}
-          onHide={hideDeleteProductDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {product && (
-              <span>
-                Are you sure you want to delete <b>{product.name}</b>?
-              </span>
-            )}
-          </div>
-        </Dialog>
+          <Dialog
+            visible={productoDialog}
+            style={{ width: "650px" }}
+            header="Producto"
+            modal
+            className="p-fluid"
+            footer={productDialogFooter}
+            onHide={hideDialog}
+          >
+            <div className="grid p-fluid">
+              <div className="col-12 md:col-6">
+                  <div className="field">
+                    <label htmlFor="codigo">Código</label>
+                    <InputText
+                      id="codigo"
+                      value={producto.codigo}
+                      onChange={(e) => onInputChange(e, "codigo")}
+                      required
+                      autoFocus
+                      className={classNames({
+                        "p-invalid": submitted && !producto.codigo,
+                      })}
+                    />
+                    {submitted && !producto.codigo && (
+                      <small className="p-invalid">
+                        El código del producto es necesario.
+                      </small>
+                    )}
+                  </div>
+                  <div className="field">
+                    <label htmlFor="name">Nombre</label>
+                    <InputText
+                      id="nombre"
+                      value={producto.nombre}
+                      onChange={(e) => onInputChange(e, "nombre")}
+                      required
+                      className={classNames({
+                        "p-invalid": submitted && !producto.nombre,
+                      })}
+                    />
+                    {submitted && !producto.nombre && (
+                      <small className="p-invalid">
+                        El nombre del producto es necesario.
+                      </small>
+                    )}
+                  </div>
+                  <div className="field">
+                    <label htmlFor="precioVenta">Precio de venta</label>
+                    <InputText
+                      id="precioVenta"
+                      value={producto.precioVenta}
+                      onChange={(e) => onInputChange(e, "precioVenta")}
+                      required
+                      className={classNames({
+                        "p-invalid": submitted && !producto.precioVenta,
+                      })}
+                    />
+                    {submitted && !producto.precioVenta && (
+                      <small className="p-invalid">
+                        El precio de venta es necesario.
+                      </small>
+                    )}
+                  </div>
+                  <div className="field">
+                    <label htmlFor="aplicaIva">Aplica IVA</label>
+                    <br />
+                    <InputSwitch
+                      checked={aplicaIva}
+                      onChange={(e) => setAlicaIva(e.value)}
+                    />
+                  </div>
+              </div>
 
-        <Dialog
-          visible={deleteProductsDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductsDialogFooter}
-          onHide={hideDeleteProductsDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {product && (
-              <span>
-                Are you sure you want to delete the selected products?
-              </span>
-            )}
-          </div>
-        </Dialog>
+              <div className="col-12 md:col-6">
+                  <div className="field">
+                    <label htmlFor="stockMin">Stock Mínimo</label>
+                    <InputText
+                      id="stockMin"
+                      value={producto.stockMin}
+                      onChange={(e) => onInputChange(e, "stockMin")}
+                      required
+                      className={classNames({
+                        "p-invalid": submitted && !producto.stockMin,
+                      })}
+                    />
+                    {submitted && !producto.stockMin && (
+                      <small className="p-invalid">
+                        El Stock mínimo del producto es necesario.
+                      </small>
+                    )}
+                  </div>
+                  <div className="field">
+                    <label htmlFor="stockMax">Stock Máximo</label>
+                    <InputText
+                      id="stockMax"
+                      value={producto.stockMax}
+                      onChange={(e) => onInputChange(e, "stockMax")}
+                      required
+                      className={classNames({
+                        "p-invalid": submitted && !producto.stockMax,
+                      })}
+                    />
+                    {submitted && !producto.stockMax && (
+                      <small className="p-invalid">
+                        El stock máximo del producto es necesario.
+                      </small>
+                    )}
+                  </div>
+                  <div className="field">
+                    <label htmlFor="name">Stock Total</label>
+                    <InputText
+                      id="stock"
+                      value={producto.stock}
+                      onChange={(e) => onInputChange(e, "stock")}
+                      required
+                      className={classNames({
+                        "p-invalid": submitted && !producto.stock,
+                      })}
+                    />
+                    {submitted && !producto.stock && (
+                      <small className="p-invalid">
+                        El stock total del porducto es necesario.
+                      </small>
+                    )}
+                  </div>
+                  <div className="field">
+                    <label htmlFor="controlaStock">Control de stock</label>
+                    <br />
+                    <InputSwitch
+                      checked={switchValue}
+                      onChange={(e) => setSwitchValue(e.value)}
+                    />
+                  </div>
+              </div>
+            </div>
+          </Dialog>
+
+          <Dialog
+            visible={deleteProductDialog}
+            style={{ width: "450px" }}
+            header="Verificación"
+            modal
+            footer={deleteProductDialogFooter}
+            onHide={hideDeleteProductDialog}
+          >
+            <div className="flex align-items-center justify-content-center">
+              <i
+                className="pi pi-exclamation-triangle mr-3"
+                style={{ fontSize: "2rem" }}
+              />
+              {producto && (
+                <span>
+                  Está seguro de borrar el producto <b>{producto.nombre}</b>?
+                </span>
+              )}
+            </div>
+          </Dialog>
+
+          <Dialog
+            visible={deleteProductsDialog}
+            style={{ width: "450px" }}
+            header="Verificación"
+            modal
+            footer={deleteProductsDialogFooter}
+            onHide={hideDeleteProductsDialog}
+          >
+            <div className="flex align-items-center justify-content-center">
+              <i
+                className="pi pi-exclamation-triangle mr-3"
+                style={{ fontSize: "2rem" }}
+              />
+              {producto && <span>Está seguro de borrar estos productos?</span>}
+            </div>
+          </Dialog>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
-
-const comparisonFn = function (prevProps, nextProps) {
-return prevProps.location.pathname === nextProps.location.pathname;
-};
-
-export default React.memo(Producto, comparisonFn);
+export default Producto;

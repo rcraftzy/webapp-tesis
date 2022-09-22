@@ -4,8 +4,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
-import { FileUpload } from "primereact/fileupload";
-import { Rating } from "primereact/rating";
 import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
@@ -38,13 +36,6 @@ const CrudCuidad = () => {
     productService.getCuidad().then((data) => setProducts(data));
     productService.getProducts().then((data) => setDropdownItems(data));
   }, []);
-
-  const formatCurrency = (value) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    });
-  };
 
   const openNew = () => {
     setProduct(emptyProduct);
@@ -144,24 +135,6 @@ const CrudCuidad = () => {
   return index;
 };
 
-const createId = () => {
-  let id = "";
-  let chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 5; i++) {
-    id += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return id;
-};
-
-const exportCSV = () => {
-  dt.current.exportCSV();
-};
-
-const confirmDeleteSelected = () => {
-  setDeleteProductsDialog(true);
-};
-
 const deleteSelectedProducts = () => {
   let _products = products.filter((val) => !selectedProducts.includes(val));
   setProducts(_products);
@@ -183,18 +156,6 @@ const onInputChange = (e, name) => {
   setProduct(_product);
 };
 
-const onInputNumberChange = (e, name) => {
-  const val = e.value || 0;
-  let _product = { ...product };
-  _product[`${name}`] = val;
-
-  setProduct(_product);
-};
-
-  const handleLocationChange = (e) => {
-  setDropdownItem({ state: e.target.value });
-}
-
   const leftToolbarTemplate = () => {
     return (
       <div>
@@ -207,36 +168,6 @@ const onInputNumberChange = (e, name) => {
       </div>
     );
   };
-
-const rightToolbarTemplate = () => {
-  return (
-    <React.Fragment>
-      <FileUpload
-        mode="basic"
-        accept="image/*"
-        maxFileSize={1000000}
-        label="Import"
-        chooseLabel="Import"
-        className="mr-2 inline-block"
-      />
-      <Button
-        label="Export"
-        icon="pi pi-upload"
-        className="p-button-help"
-        onClick={exportCSV}
-      />
-    </React.Fragment>
-  );
-};
-
-const codeBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Code</span>
-      {rowData.id}
-    </>
-  );
-};
 
 const nameBodyTemplate = (rowData) => {
   return (
@@ -256,19 +187,6 @@ const provinciaBodyTemplate = (rowData) => {
   );
 };
 
-const imageBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Image</span>
-      <img
-        src={`assets/demo/images/product/${rowData.image}`}
-        alt={rowData.image}
-        className="shadow-2"
-        width="100"
-      />
-    </>
-  );
-};
 const actionBodyTemplate = (rowData) => {
   return (
     <div className="actions">
