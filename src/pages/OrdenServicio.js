@@ -3,28 +3,20 @@ import classNames from "classnames";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
-import { FileUpload } from "primereact/fileupload";
-import { Rating } from "primereact/rating";
 import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { DataView, DataViewLayoutOptions } from "primereact/dataview";
+import { DataView } from "primereact/dataview";
 
-import { ProductService } from "../service/ProductService";
 import { OrdenServicioService } from "../service/OrdenServicioService";
 import { ClienteService } from "../service/ClienteService";
 import { getTecnicos } from "../service/TecnicoService";
 import { EstadoService } from "../service/EstadoService";
 import { ProductoService } from "../service/ProductoService";
 
-import { Tag } from "primereact/tag";
 // Import for form
 import { InputTextarea } from "primereact/inputtextarea";
-import { AutoComplete } from "primereact/autocomplete";
-import { Calendar } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
-import { CountryService } from "../service/CountryService";
-import { NodeService } from "../service/NodeService";
 
 import { OverlayPanel } from "primereact/overlaypanel";
 import { DataTable } from "primereact/datatable";
@@ -37,11 +29,11 @@ const OrdenServicio = () => {
     cantidad: null,
     producto: {},
     descripcion: "",
-    precio_unitario: null,
-    descuento: null,
-    porcentaje_IVA: null,
-    valor_IVA: null,
-    total: null,
+    precio_unitario: 0,
+    descuento: "0",
+    porcentaje_IVA: 12,
+    valor_IVA: 1.2,
+    total: 0,
     diagnostico_recepcion: "",
     diagnostico_tecnico: "",
     descripcion_diagnostico_tecnico: "",
@@ -107,40 +99,28 @@ const OrdenServicio = () => {
   const [detalleOrdenesServicio, setDetalleOrdenesServicio] = useState(null);
 
   const [productDialog, setProductDialog] = useState(false);
-  const [deleteProductDialog, setDeleteProductDialog] = useState(false);
-  const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
-
-  const [sortOrder, setSortOrder] = useState(null);
-  const [layout, setLayout] = useState("grid");
-  const [sortField, setSortField] = useState(null);
 
   const [ordenServicio, setOrdenServicio] = useState(emptyOrdenServicio);
   const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(
     emptyOrdenServicio,
   );
 
-  const [selectedOrdenesServicio, setSelectedOrdenesServicio] = useState(null);
-  const [selectedDetalleOrdenesServicio, setSelectedDetalleOrdenesServicio] =
-    useState(null);
-
   const [submitted, setSubmitted] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
-  const dt = useRef(null);
 
-  const [autoValue, setAutoValue] = useState(null);
-  const [selectedAutoValue, setSelectedAutoValue] = useState(null);
-  const [autoFilteredValue, setAutoFilteredValue] = useState([]);
-  const [calendarValue, setCalendarValue] = useState(null);
-  const [checkboxValue, setCheckboxValue] = useState([]);
   const [dropdownValue, setDropdownValue] = useState(null);
-  const [treeSelectNodes, setTreeSelectNodes] = useState(null);
 
   const [clientes, setClientes] = useState(null);
+  const [cliente, setCliente] = useState(null);
   const [tecnicos, setTecnicos] = useState(null);
+  const [tecnico, setTecnico] = useState(null);
   const [estados, setEstados] = useState(null);
+  const [estado, setEstado] = useState(null);
   const [productos, setProductos] = useState(null);
+  const [producto, setProducto] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [ordenDialog, setOrdenDialog] = useState(false);
 
   const [selectedTecnico, setSelectedTecnico] = useState(null);
   const [selectedProducto, setSelectedProducto] = useState(null);
@@ -165,78 +145,55 @@ const OrdenServicio = () => {
 
     const productoService = new ProductoService();
     productoService.getProductos().then((data) => setProductos(data));
-
-    const countryService = new CountryService();
-    const nodeService = new NodeService();
-    countryService.getCountries().then((data) => setAutoValue(data));
-    nodeService.getTreeNodes().then((data) => setTreeSelectNodes(data));
   }, []);
+
+  const getDetallesForOrden = async (id) => {
+    const ordenServicioService = new OrdenServicioService();
+    ordenServicioService.getDetallesO(id).then((data) =>
+      setDetalleOrdenesServicio(data)
+    );
+  };
 
   const onProductSelect = (event) => {
     op2.current.hide();
+    setCliente(event.data);
     toast.current.show({
       severity: "info",
-      summary: "Product Selected",
-      detail: event.data.name,
+      summary: "Cliente seleccionado",
+      detail: event.data.nombres + " " + event.data.apellidos,
       life: 3000,
     });
   };
   const onTecnicoSelect = (event) => {
     op1.current.hide();
+    setTecnico(event.data);
     toast.current.show({
       severity: "info",
-      summary: "Product Selected",
-      detail: event.data.name,
+      summary: "Técnico seleccionado",
+      detail: event.data.nombre + " " + event.data.apellido,
       life: 3000,
     });
   };
   const onProductoSelect = (event) => {
     op1.current.hide();
+    setProducto(event.data);
     toast.current.show({
       severity: "info",
-      summary: "Product Selected",
-      detail: event.data.name,
+      summary: "Producto seleccionado",
+      detail: event.data.nombre,
       life: 3000,
     });
   };
-  const searchCountry = (event) => {
-    setTimeout(() => {
-      if (!event.query.trim().length) {
-        setAutoFilteredValue([...autoValue]);
-      } else {
-        setAutoFilteredValue(
-          autoValue.filter((country) => {
-            return country.name.toLowerCase().startsWith(
-              event.query.toLowerCase(),
-            );
-          }),
-        );
-      }
-    }, 250);
-  };
 
-  const menubarEndTemplate = () => {
-    return (
-      <span className="p-input-icon-left">
-        <i className="pi pi-search" />
-        <InputText type="text" placeholder="Search" />
-      </span>
-    );
-  };
   const toggleDataTable = (event) => {
     op2.current.toggle(event);
   };
+
   const toggleDataTableTecnico = (event) => {
     op1.current.toggle(event);
   };
   const toggleDataTableProducto = (event) => {
     op3.current.toggle(event);
-  };
-  const formatCurrency = (value) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    });
   };
 
   const openNew = () => {
@@ -245,32 +202,95 @@ const OrdenServicio = () => {
     setProductDialog(true);
   };
 
+  const openNewDetalle = () => {
+    setDetalleOrdenServicio(emptyDetalleOrdenServicio);
+    setSubmitted(false);
+    setOrdenDialog(true);
+  };
+
   const hideDialog = () => {
     setSubmitted(false);
     setProductDialog(false);
   };
-
-  const hideDeleteProductDialog = () => {
-    setDeleteProductDialog(false);
+  const hideDialogOrden = () => {
+    setSubmitted(false);
+    setOrdenDialog(false);
   };
-
-  const hideDeleteProductsDialog = () => {
-    setDeleteProductsDialog(false);
-  };
-
-  const saveProduct = () => {
+  const saveOrden = () => {
     setSubmitted(true);
-    const productService = new ProductService();
+    const orden = new OrdenServicioService();
 
-    if (ordenServicio.nombre.trim()) {
+    if (ordenServicio.observaciones.trim()) {
+      console.log("first if");
       let _ordenesServicio = [...ordenesServicio];
       let _ordenServicio = { ...ordenServicio };
       if (ordenServicio.id) {
+        console.log("second if");
         const index = findIndexById(ordenServicio.id);
 
         _ordenesServicio[index] = _ordenServicio;
 
-        productService.putProvincia(_ordenServicio);
+        orden.putProvincia(_ordenServicio);
+        orden.putOrden(ordenServicio.id, {
+          numOrden: "4",
+          empresa_id: 1,
+          cliente_id: cliente.id,
+          fecha_emision: "2022-09-28",
+          estado_orden_servicio_id: estado.id,
+          sub_total_con_IVA: 0.0,
+          sub_total_sin_IVA: 0.0,
+          tecnico_id: tecnico.id,
+          descuento: 0.0,
+          valor_IVA: 12.0,
+          total: 0.0,
+          observaciones: ordenServicio.observaciones,
+        });
+        toast.current.show({
+          severity: "success",
+          summary: "Exito",
+          detail: "Orden se servicio actualizado",
+          life: 3000,
+        });
+      } else {
+        orden.postOrden({
+          numero_orden: "4",
+          empresa_id: 1,
+          cliente_id: cliente.id,
+          fecha_emision: "2022-05-03",
+          estado_orden_servicio_id: estado.id,
+          sub_total_con_IVA: 0.0,
+          sub_total_sin_IVA: 0.0,
+          tecnico_id: tecnico.id,
+          descuento: 0.0,
+          valor_IVA: 12.0,
+          total: 0.0,
+          observaciones: ordenServicio.observaciones,
+        });
+
+        toast.current.show({
+          severity: "success",
+          summary: "Exito",
+          detail: "Orden de servicio creado",
+          life: 3000,
+        });
+      }
+      setOrdenesServicio(_ordenesServicio);
+      setProductDialog(false);
+      setOrdenServicio(emptyOrdenServicio);
+    }
+  };
+
+  const saveDetalle = () => {
+    setSubmitted(true);
+    const detalle = new OrdenServicioService();
+
+    if (detalleOrdenServicio.descuento.trim()) {
+      let _ordenesServicio = [...detalleOrdenesServicio];
+      let _ordenServicio = { ...detalleOrdenServicio };
+      if (detalleOrdenServicio.id) {
+        const index = findIndexById(detalleOrdenServicio.id);
+
+        _ordenesServicio[index] = _ordenServicio;
 
         toast.current.show({
           severity: "success",
@@ -279,10 +299,23 @@ const OrdenServicio = () => {
           life: 3000,
         });
       } else {
-        productService.postProvincia(_ordenServicio);
+        console.log(dropdownValue);
+        detalle.postDetalle({
+          orden_servicio_id: 1,
+          cantidad: 1,
+          producto_id: producto.id,
+          descripcion: producto.nombre,
+          precio_unitario: producto.precioVenta,
+          descuento: parseFloat(detalleOrdenServicio.descuento),
+          porcentaje_IVA: 12,
+          valor_IVA: 1.2,
+          total: 20,
+          diagnostico_recepcion: "",
+          diagnostico_tecnico: "",
+          descripcion_diagnostico_tecnico: "",
+          estado_orden_servcio_id: dropdownValue.id,
+        });
 
-        /*  _product.id = createId();
-                _product.image = "product-placeholder.svg"; */
         _ordenesServicio.push(_ordenServicio);
         toast.current.show({
           severity: "success",
@@ -298,34 +331,6 @@ const OrdenServicio = () => {
     }
   };
 
-  const editProduct = (product) => {
-    setOrdenServicio({ ...product });
-    setProductDialog(true);
-  };
-
-  const confirmDeleteProduct = (product) => {
-    setOrdenServicio(product);
-    setDeleteProductDialog(true);
-  };
-
-  const deleteProduct = () => {
-    let _products = ordenesServicio.filter((val) =>
-      val.id !== ordenServicio.id
-    );
-    setOrdenesServicio(_products);
-    setDeleteProductDialog(false);
-    setOrdenServicio(emptyOrdenServicio);
-
-    const prov = new ProductService();
-    prov.deleteProvincia(ordenesServicio.id);
-    toast.current.show({
-      severity: "success",
-      summary: "Successful",
-      detail: "Product Deleted",
-      life: 3000,
-    });
-  };
-
   const findIndexById = (id) => {
     let index = -1;
     for (let i = 0; i < ordenesServicio.length; i++) {
@@ -338,55 +343,37 @@ const OrdenServicio = () => {
     return index;
   };
 
-  const deleteSelectedProducts = () => {
-    let _ordenesServicio = ordenesServicio.filter((val) =>
-      !selectedOrdenesServicio.includes(val)
-    );
-    setOrdenesServicio(_ordenesServicio);
-    setDeleteProductsDialog(false);
-    setSelectedOrdenesServicio(null);
-    toast.current.show({
-      severity: "success",
-      summary: "Successful",
-      detail: "Products Deleted",
-      life: 3000,
-    });
-  };
-
-  const onCategoryChange = (e) => {
-    let _product = { ...ordenServicio };
-    _product["category"] = e.value;
-    setOrdenServicio(_product);
-  };
-
-  const onInputChange = (e, name) => {
-    const val = (e.target && e.target.value) || "";
-    let _product = { ...ordenServicio };
-    _product[`${name}`] = val;
-
-    setOrdenServicio(_product);
-  };
-
-  const onInputNumberChange = (e, name) => {
-    const val = e.value || 0;
-    let _product = { ...ordenServicio };
-    _product[`${name}`] = val;
-
-    setOrdenServicio(_product);
-  };
-
   const leftToolbarTemplate = () => {
     return (
       <div>
         <Button
           label="Nuevo"
+          type="button"
           icon="pi pi-plus"
           className="p-button-success mr-2"
           onClick={openNew}
+          style={{ marginRight: ".25em" }}
         />
       </div>
     );
   };
+
+  const ordenDialogFooter = (
+    <>
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDialogOrden}
+      />
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={saveDetalle}
+      />
+    </>
+  );
 
   const productDialogFooter = (
     <>
@@ -400,131 +387,161 @@ const OrdenServicio = () => {
         label="Guardar"
         icon="pi pi-check"
         className="p-button-text"
-        onClick={saveProduct}
+        onClick={saveOrden}
       />
     </>
   );
-  const deleteProductDialogFooter = (
-    <>
-      <Button
-        label="No"
-        icon="pi pi-times"
-        className="p-button-text"
-        onClick={hideDeleteProductDialog}
-      />
-      <Button
-        label="Yes"
-        icon="pi pi-check"
-        className="p-button-text"
-        onClick={deleteProduct}
-      />
-    </>
-  );
-  const deleteProductsDialogFooter = (
-    <>
-      <Button
-        label="No"
-        icon="pi pi-times"
-        className="p-button-text"
-        onClick={hideDeleteProductsDialog}
-      />
-      <Button
-        label="Yes"
-        icon="pi pi-check"
-        className="p-button-text"
-        onClick={deleteSelectedProducts}
-      />
-    </>
-  );
-  const dataviewListItem = (data) => {
+  const Etiqueta = ({ children, data }) => {
+    let background = {
+      backgroundColor: `#${data.estado_orden_servicio.color}`,
+      padding: "7px",
+      borderRadius: "8px",
+    };
+    return <strong style={background}>{children}</strong>;
+  };
+
+  const editOrden = (orden) => {
+    setOrdenServicio({ ...orden });
+    setProductDialog(true);
+  };
+
+  const itemTemplate = (data) => {
     return (
       <div className="col-12">
-        <div className="card m-3 border-1 surface-border">
-          <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
+        <div className="card border-1 surface-border">
+          <div className="flex flex-column md:flex-row align-items-center w-full">
             <div className="flex-1 text-center md:text-left">
               <div>
                 <i className="pi pi-hashtag" />
-                <span>{data.orden_servicio.numOrden}</span>
+                <span>{data.numOrden}</span>
               </div>
               <div className="mt-2 mb-2">
                 Técnico<span className="font-semibold m-2">
-                  {`${data.orden_servicio.tecnico.nombre} ${data.orden_servicio.tecnico.apellido}`}
+                  {`${data.tecnico.nombre} ${data.tecnico.apellido}`}
                 </span>
               </div>
-              <div className="mb-3">
+              <div className="mb-1">
                 <i className="pi pi-calendar" />
-                <span>{data.orden_servicio.fecha_emision}</span>
+                <span>{data.fecha_emision}</span>
               </div>
             </div>
             <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
-              <Tag
-                className="mr-2"
-                severity={`${
-                  data.orden_servicio.estado_orden_servicio.state ==
-                      "En proceso"
-                    ? "warning"
-                    : ""
-                }`}
-                value={data.orden_servicio.estado_orden_servicio.state}
-              />
-              <span className="p-buttonset">
-                <Button label="Editar" icon="pi pi-pencil" />
-                <Button label="Eliminar" icon="pi pi-trash" />
-              </span>
+              <Etiqueta data={data}>
+                {data.estado_orden_servicio.state}
+              </Etiqueta>
+
+              <div className="mt-2 mb-2">
+                <Button
+                  icon="pi pi-pencil"
+                  className="p-button-rounded p-button-success mr-2"
+                  onClick={() => editOrden(data)}
+                />
+              </div>
             </div>
           </div>
 
           <Accordion>
             <AccordionTab header="Detalles">
-              <section>
-                <article>
-                  <strong>Descripción:</strong>
-                  <p></p>
-                </article>
-                <article>
-                  <strong>Diagnostico en recepcion:</strong>
-                  <p></p>
-                </article>
-                <article>
-                  <strong>Diagnostico Tecnico:</strong>
-                  <p></p>
-                </article>
-                <article>
-                  <strong>Descripción:</strong>
-                  <p></p>
-                </article>
-                <article>
-                  <strong>Productos:</strong>
-                  <p></p>
-                </article>
-                <article>
-                  <strong>Precio unitario:</strong>23
-                </article>
-                <article>
-                  <strong>Cantidad:</strong>
-                </article>
-                <article>
-                  <strong>Descuento:</strong>
-                </article>
-                <article>
-                  <strong>Porcentaje IVA:</strong>
-                </article>
-                <article>
-                  <strong>Total IVA:</strong>
-                </article>
-                <article>
-                  <strong>Total:</strong>
-                </article>
-              </section>
+              <DataTable
+                value={detalleOrdenesServicio}
+                responsiveLayout="scroll"
+                rows={15}
+              >
+                <Column
+                  field="codigo"
+                  header="Código"
+                  body={codigoBodyTemplate}
+                  headerStyle={{ minWidth: "7rem" }}
+                />
+                <Column
+                  field="descripcion"
+                  header="Descripción"
+                  headerStyle={{ minWidth: "14rem" }}
+                />
+                <Column
+                  field="cantidad"
+                  header="Cantidad"
+                  headerStyle={{ minWidth: "7rem" }}
+                />
+
+                <Column
+                  field="precio_unitario"
+                  header="Precio Unitario"
+                  headerStyle={{ minWidth: "8rem" }}
+                />
+                <Column
+                  field="descuento"
+                  header="Descuento"
+                  headerStyle={{ minWidth: "7rem" }}
+                />
+                <Column
+                  field="porcentaje_IVA"
+                  header="% IVA"
+                  headerStyle={{ minWidth: "8rem" }}
+                />
+                <Column
+                  field="valor_IVA"
+                  header="Valor IVA"
+                  headerStyle={{ minWidth: "7rem" }}
+                />
+                <Column
+                  field="total"
+                  header="Total"
+                  headerStyle={{ minWidth: "8rem" }}
+                />
+              </DataTable>
             </AccordionTab>
           </Accordion>
         </div>
       </div>
     );
   };
-  const itemTemplate = (data) => {
-    return dataviewListItem(data);
+  const codigoBodyTemplate = (rowData) => (
+    <>
+      <span className="p-column-title">Código</span>
+      {rowData.producto.codigo}
+    </>
+  );
+
+  const onInputChange = (e, name) => {
+    const val = (e.target && e.target.value) || "";
+    let _product = { ...ordenServicio };
+    _product[`${name}`] = val;
+
+    setOrdenServicio(_product);
   };
+  const itemTecnico = (data) => {
+    return ( 
+    <div className="col-12">
+        <div className="flex-1 text-center md:text-left">
+          <div className="mb-3">
+            <strong>Cedula:</strong>
+            <span>{data.cedula}</span>
+          </div>
+          <div className="mb-3">
+            <strong>Nombre:</strong>
+            <span>{data.nombre}</span>
+          </div>
+            <div className="mb-3">
+            <strong>Apellido:</strong>
+            <span>{data.apellido}</span>
+          </div>
+          <div className="mb-3">
+            <strong>Direccion:</strong>
+            <span>{data.direccion}</span>
+          </div>
+          <div className="mb-3">
+            <strong>Telefono:</strong>
+            <span>{data.telefono}</span>
+          </div>
+          <div className="mb-3">
+            <strong>Ciudad:</strong>
+            <span>{data.ciudad.nombre}</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="grid crud-demo">
@@ -533,185 +550,230 @@ const OrdenServicio = () => {
           <Toast ref={toast} />
           <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
           <DataView
-            value={detalleOrdenesServicio}
-            layout={layout}
+            value={ordenesServicio}
+            layout="grid"
             paginator
             rows={9}
-            sortOrder={sortOrder}
-            sortField={sortField}
             itemTemplate={itemTemplate}
           >
           </DataView>
         </div>
         <Dialog
           visible={productDialog}
-          style={{ width: "1000px" }}
+          style={{ width: "1000px", minHeight: "100vh" }}
           header="Orden servicio"
           modal
           className="p-fluid"
           footer={productDialogFooter}
           onHide={hideDialog}
         >
-          {ordenServicio.image && (
-            <img
-              src={`assets/demo/images/product/${ordenServicio.image}`}
-              alt={ordenServicio.image}
-              width="150"
-              className="mt-0 mx-auto mb-5 block shadow-2"
+          <div className="grid p-fluid">
+            <div className="col-12 mb-2 lg:col-6 lg:mb-0">
+              <div className="grid p-fluid">
+                <div className="col-12 mb-2 lg:col-6 lg:mb-0">
+                  <h5>Técnico</h5>
+                </div>
+                <div className="col-12 mb-2 lg:col-6 lg:mb-0">
+                  <Button
+                    type="button"
+                    label="Seleccionar de técnico"
+                    onClick={toggleDataTableTecnico}
+                    className="p-button-success"
+                  />
+                </div>
+                <DataView
+                  value={tecnico}
+                  layout="grid"
+                  rows={4}
+                  emptyMessage=" "
+                  itemTemplate={itemTecnico}
+                  />
+              </div>
+              <OverlayPanel
+                ref={op1}
+                appendTo={document.body}
+                showCloseIcon
+                id="overlay_panel_Tecnico"
+                style={{ width: "450px" }}
+              >
+                <DataTable
+                  value={tecnicos}
+                  selection={selectedTecnico}
+                  onSelectionChange={(e) => setSelectedTecnico(e.value)}
+                  selectionMode="single"
+                  responsiveLayout="scroll"
+                  paginator
+                  rows={5}
+                  onRowSelect={onTecnicoSelect}
+                >
+                  <Column
+                    field="cedula"
+                    header="Cedula"
+                    sortable
+                    headerStyle={{ minWidth: "10rem" }}
+                  />
+                  <Column
+                    field="nombre"
+                    header="Nombres"
+                    sortable
+                    headerStyle={{ minWidth: "10rem" }}
+                  />
+                  <Column
+                    field="apellido"
+                    header="Apellidos"
+                    sortable
+                    headerStyle={{ minWidth: "8rem" }}
+                  />
+                </DataTable>
+              </OverlayPanel>
+              <div className="grid p-fluid">
+                <div className="col-12 mb-2 lg:col-6 lg:mb-0">
+                  <h5>Cliente</h5>
+                </div>
+                <div className="col-12 mb-2 lg:col-6 lg:mb-0">
+                  <Button
+                    type="button"
+                    label="Seleccionar cliente"
+                    onClick={toggleDataTable}
+                    className="p-button-success"
+                  />
+                </div>
+              </div>
+              <OverlayPanel
+                ref={op2}
+                appendTo={document.body}
+                showCloseIcon
+                id="overlay_panel"
+                style={{ width: "450px" }}
+              >
+                <DataTable
+                  value={clientes}
+                  selection={selectedProduct}
+                  onSelectionChange={(e) => setSelectedProduct(e.value)}
+                  selectionMode="single"
+                  responsiveLayout="scroll"
+                  paginator
+                  rows={5}
+                  onRowSelect={onProductSelect}
+                >
+                  <Column
+                    field="dni"
+                    header="Cedula"
+                    sortable
+                    headerStyle={{ minWidth: "10rem" }}
+                  />
+                  <Column
+                    field="nombres"
+                    header="Nombres"
+                    sortable
+                    headerStyle={{ minWidth: "10rem" }}
+                  />
+                  <Column
+                    field="apellidos"
+                    header="Apellidos"
+                    sortable
+                    headerStyle={{ minWidth: "8rem" }}
+                  />
+                </DataTable>
+              </OverlayPanel>
+              <h5>Estado</h5>
+              <Dropdown
+                value={ordenServicio.estado_orden_servicio}
+                onChange={(e) => setEstado(e.value)}
+                options={estados}
+                optionLabel="state"
+                placeholder="Selecciona un estado"
+              />
+            </div>
+            <div className="col-12 mb-2 lg:col-6 lg:mb-0">
+              <h5>Observaciones</h5>
+              <InputTextarea
+                id="observaciones"
+                value={ordenServicio.observaciones}
+                onChange={(e) => onInputChange(e, "observaciones")}
+                placeholder="Observaciones..."
+                autoResize
+                rows="3"
+                cols="30"
+              />
+            </div>
+          </div>
+
+          <h5>Detalles de la orden</h5>
+          <Button
+            label="Nuevo"
+            type="button"
+            icon="pi pi-plus"
+            className="p-button-success mr-2"
+            onClick={openNewDetalle}
+            style={{ marginRight: ".25em" }}
+          />
+          <DataTable
+            value={detalleOrdenesServicio}
+            responsiveLayout="scroll"
+            paginator
+            rows={5}
+          >
+            <Column
+              field="codigo"
+              header="Código"
+              body={codigoBodyTemplate}
+              headerStyle={{ minWidth: "7rem" }}
             />
-          )}
+            <Column
+              field="descripcion"
+              header="Descripción"
+              headerStyle={{ minWidth: "14rem" }}
+            />
+            <Column
+              field="cantidad"
+              header="Cantidad"
+              headerStyle={{ minWidth: "7rem" }}
+            />
+
+            <Column
+              field="precio_unitario"
+              header="Precio Unitario"
+              headerStyle={{ minWidth: "8rem" }}
+            />
+            <Column
+              field="descuento"
+              header="Descuento"
+              headerStyle={{ minWidth: "7rem" }}
+            />
+            <Column
+              field="porcentaje_IVA"
+              header="% IVA"
+              headerStyle={{ minWidth: "8rem" }}
+            />
+            <Column
+              field="valor_IVA"
+              header="Valor IVA"
+              headerStyle={{ minWidth: "7rem" }}
+            />
+            <Column
+              field="total"
+              header="Total"
+              headerStyle={{ minWidth: "8rem" }}
+            />
+          </DataTable>
+        </Dialog>
+        <Dialog
+          visible={ordenDialog}
+          style={{ width: "550px" }}
+          header="Detalle de orden"
+          modal
+          className="p-fluid"
+          footer={ordenDialogFooter}
+          onHide={hideDialogOrden}
+        >
           <div className="field">
             <div className="grid p-fluid">
               <div className="col-12 md:col-6">
-                <h5>Cliente</h5>
-                <Button
-                  type="button"
-                  label="DataTable"
-                  onClick={toggleDataTable}
-                  className="p-button-success"
-                />
-                <OverlayPanel
-                  ref={op2}
-                  appendTo={document.body}
-                  showCloseIcon
-                  id="overlay_panel"
-                  style={{ width: "450px" }}
-                >
-                  <DataTable
-                    value={clientes}
-                    selection={selectedProduct}
-                    onSelectionChange={(e) => setSelectedProduct(e.value)}
-                    selectionMode="single"
-                    responsiveLayout="scroll"
-                    paginator
-                    rows={5}
-                    onRowSelect={onProductSelect}
-                  >
-                    <Column
-                      field="dni"
-                      header="Cedula"
-                      sortable
-                      headerStyle={{ minWidth: "10rem" }}
-                    />
-                    <Column
-                      field="nombres"
-                      header="Nombres"
-                      sortable
-                      headerStyle={{ minWidth: "10rem" }}
-                    />
-                    <Column
-                      field="apellidos"
-                      header="Apellidos"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-
-                    <Column
-                      field="celular"
-                      header="Celular"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="telefono"
-                      header="Telefono"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="email"
-                      header="E-mail"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="direccion"
-                      header="Direccion"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                  </DataTable>
-                </OverlayPanel>
-
-                <h5>Tecnico</h5>
-                <Button
-                  type="button"
-                  label="DataTable"
-                  onClick={toggleDataTableTecnico}
-                  className="p-button-success"
-                />
-                <OverlayPanel
-                  ref={op1}
-                  appendTo={document.body}
-                  showCloseIcon
-                  id="overlay_panel"
-                  style={{ width: "450px" }}
-                >
-                  <DataTable
-                    value={tecnicos}
-                    selection={selectedTecnico}
-                    onSelectionChange={(e) => setSelectedTecnico(e.value)}
-                    selectionMode="single"
-                    responsiveLayout="scroll"
-                    paginator
-                    rows={5}
-                    onRowSelect={onTecnicoSelect}
-                  >
-                    <Column
-                      field="cedula"
-                      header="Cedula"
-                      sortable
-                      headerStyle={{ minWidth: "10rem" }}
-                    />
-                    <Column
-                      field="nombre"
-                      header="Nombres"
-                      sortable
-                      headerStyle={{ minWidth: "10rem" }}
-                    />
-                    <Column
-                      field="apellido"
-                      header="Apellidos"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-
-                    <Column
-                      field="celular"
-                      header="Celular"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="telefono"
-                      header="celular"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="email"
-                      header="E-mail"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="direccion"
-                      header="Direccion"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                  </DataTable>
-                </OverlayPanel>
-                <h5>Estado</h5>
-                <Dropdown
-                  value={dropdownValue}
-                  onChange={(e) => setDropdownValue(e.value)}
-                  options={estados}
-                  optionLabel="state"
-                  placeholder="Selecciona un estado"
-                />
                 <h5>Precio</h5>
                 <div className="grid p-fluid">
+                  {
+                    /*
                   <div className="col-12 md:col-6">
                     <div className="p-inputgroup">
                       <span className="p-float-label">
@@ -734,48 +796,41 @@ const OrdenServicio = () => {
                       <span className="p-inputgroup-addon">$</span>
                     </div>
                   </div>
-
+                    */
+                  }
                   <div className="col-12 md:col-6">
                     <div className="p-inputgroup">
-                      <InputText placeholder="Descuento" />
+                      <InputText
+                        id="descuento"
+                        value={detalleOrdenServicio.descuento}
+                        onChange={(e) => onInputChange(e, "descuento")}
+                        autoFocus
+                        placeholder="Descuento"
+                        className={classNames({
+                          "p-invalid": submitted &&
+                            !detalleOrdenServicio.descuento,
+                        })}
+                      />
                       <span className="p-inputgroup-addon">%</span>
                     </div>
                   </div>
 
+                  {
+                    /*
                   <div className="col-12 md:col-6">
                     <div className="p-inputgroup">
                       <InputText placeholder="Total" disabled />
                       <span className="p-inputgroup-addon">$</span>
                     </div>
                   </div>
+                    */
+                  }
                 </div>
-
-                <h5>Observaciones</h5>
-                <InputTextarea
-                  placeholder="Observacion..."
-                  autoResize
-                  rows="3"
-                  cols="30"
-                />
-
-                <h5>Fecha de emision</h5>
-                <Calendar
-                  showIcon
-                  showButtonBar
-                  value={calendarValue}
-                  onChange={(e) => setCalendarValue(e.value)}
-                >
-                </Calendar>
               </div>
 
               <div className="col-12 md:col-6">
-                <h5>Diagnostico en recepción</h5>
-                <InputTextarea
-                  placeholder="Decripcion del cliente..."
-                  autoResize
-                  rows="3"
-                  cols="30"
-                />
+                {
+                  /*
                 <h5>Diagnostico del tecnico</h5>
                 <InputTextarea
                   placeholder="Observaciones..."
@@ -790,11 +845,13 @@ const OrdenServicio = () => {
                   rows="3"
                   cols="30"
                 />
+                  */
+                }
 
                 <h5>Producto</h5>
                 <Button
                   type="button"
-                  label="DataTable"
+                  label="Seleccionar el producto"
                   onClick={toggleDataTableProducto}
                   className="p-button-success"
                 />
@@ -816,143 +873,33 @@ const OrdenServicio = () => {
                     onRowSelect={onProductoSelect}
                   >
                     <Column
-                      field="cedula"
-                      header="Cedula"
-                      sortable
-                      headerStyle={{ minWidth: "10rem" }}
-                    />
+                      field="codigo"
+                      header="Código"
+                      headerStyle={{ width: "14%", minWidth: "7rem" }}
+                    >
+                    </Column>
                     <Column
                       field="nombre"
-                      header="Nombres"
-                      sortable
-                      headerStyle={{ minWidth: "10rem" }}
-                    />
+                      header="Nombre"
+                      headerStyle={{ width: "34%", minWidth: "10rem" }}
+                    >
+                    </Column>
                     <Column
-                      field="apellido"
-                      header="Apellidos"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-
+                      field="precioVenta"
+                      header="Precio de venta"
+                      headerStyle={{ width: "14%", minWidth: "10rem" }}
+                    >
+                    </Column>
                     <Column
-                      field="celular"
-                      header="Celular"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="telefono"
-                      header="celular"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="email"
-                      header="E-mail"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
-                    <Column
-                      field="direccion"
-                      header="Direccion"
-                      sortable
-                      headerStyle={{ minWidth: "8rem" }}
-                    />
+                      field="stock"
+                      header="Stock"
+                      headerStyle={{ width: "6%", minWidth: "5rem" }}
+                    >
+                    </Column>
                   </DataTable>
                 </OverlayPanel>
               </div>
             </div>
-            <DataTable
-              value={tecnicos}
-              selection={selectedTecnico}
-              responsiveLayout="scroll"
-              paginator
-              rows={5}
-            >
-              <Column
-                field="cedula"
-                header="Código"
-                headerStyle={{ minWidth: "7rem" }}
-              />
-              <Column
-                field="nombre"
-                header="Descripción"
-                headerStyle={{ minWidth: "14rem" }}
-              />
-              <Column
-                field="apellido"
-                header="Cantidad"
-                headerStyle={{ minWidth: "7rem" }}
-              />
-
-              <Column
-                field="celular"
-                header="Precio Unitario"
-                headerStyle={{ minWidth: "8rem" }}
-              />
-              <Column
-                field="telefono"
-                header="Descuento"
-                headerStyle={{ minWidth: "7rem" }}
-              />
-              <Column
-                field="email"
-                header="% IVA"
-                headerStyle={{ minWidth: "8rem" }}
-              />
-              <Column
-                field="direccion"
-                header="Valor IVA"
-                headerStyle={{ minWidth: "7rem" }}
-              />
-              <Column
-                field="direccion"
-                header="Total"
-                headerStyle={{ minWidth: "8rem" }}
-              />
-            </DataTable>
-          </div>
-        </Dialog>
-
-        <Dialog
-          visible={deleteProductDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductDialogFooter}
-          onHide={hideDeleteProductDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {ordenServicio && (
-              <span>
-                Are you sure you want to delete <b>{ordenServicio.nombre}</b>?
-              </span>
-            )}
-          </div>
-        </Dialog>
-
-        <Dialog
-          visible={deleteProductsDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductsDialogFooter}
-          onHide={hideDeleteProductsDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {ordenServicio && (
-              <span>
-                Are you sure you want to delete the selected products?
-              </span>
-            )}
           </div>
         </Dialog>
       </div>

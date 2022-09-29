@@ -4,13 +4,11 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
-import { FileUpload } from "primereact/fileupload";
-import { Rating } from "primereact/rating";
 import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import * as API from "../service/TecnicoService";
-import * as APICiudad from "../service/ProductService";
+// import * as APICiudad from "../service/ProductService";
 
 import { Dropdown } from "primereact/dropdown";
 
@@ -52,18 +50,13 @@ const Tecnico = () => {
 
   const [tecnicos, setTecnicos] = useState(null);
   const [tecnicoDialog, setTecnicoDialog] = useState(false);
-  const [deleteProductDialog, setDeleteProductDialog] = useState(false);
-  const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
   const [tecnico, setTecnico] = useState(emptyTecnico);
-  const [selectedTecnicos, setSelectedTecnicos] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
-  const dt = useRef(null);
 
   const [dropdownItem, setDropdownItem] = useState(null);
   const [dropdownItems, setDropdownItems] = useState(null);
-
 
   useEffect(() => {
     (
@@ -110,10 +103,6 @@ const Tecnico = () => {
     setSubmitted(false);
     setTecnicoDialog(false);
   };
-  const hideDeleteProductsDialog = () => {
-    setDeleteProductsDialog(false);
-  };
-
   const saveProduct = () => {
     setSubmitted(true);
 
@@ -176,18 +165,6 @@ const Tecnico = () => {
     );
   };
 
-  const deleteSelectedProducts = () => {
-    let _products = tecnicos.filter((val) => !selectedTecnicos.includes(val));
-    setTecnicos(_products);
-    setDeleteProductsDialog(false);
-    setSelectedTecnicos(null);
-    toast.current.show({
-      severity: "success",
-      summary: "Successful",
-      detail: "Técnicos eliminados",
-      life: 3000,
-    });
-  };
   const leftToolbarTemplate = () => {
     return (
           <Button
@@ -214,24 +191,7 @@ const Tecnico = () => {
       />
     </>
   );
-  
-  const deleteProductsDialogFooter = (
-    <>
-      <Button
-        label="No"
-        icon="pi pi-times"
-        className="p-button-text"
-        onClick={hideDeleteProductsDialog}
-      />
-      <Button
-        label="Si"
-        icon="pi pi-check"
-        className="p-button-text"
-        onClick={deleteSelectedProducts}
-      />
-    </>
-  );
-  const header = (
+   const header = (
   <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
     <h5 className="m-0">Tecnicos</h5>
     <span className="block mt-2 md:mt-0 p-input-icon-left">
@@ -311,6 +271,7 @@ const Tecnico = () => {
                 value={tecnico.cedula}
                 onChange={(e) => onInputChange(e, "cedula")}
                 required
+                autoFocus
                 className={classNames({
                   "p-invalid": submitted && !tecnico.cedula,
                 })}
@@ -328,7 +289,6 @@ const Tecnico = () => {
                 value={tecnico.nombre}
                 onChange={(e) => onInputChange(e, "nombre")}
                 required
-                autoFocus
                 className={classNames({
                   "p-invalid": submitted && !tecnico.nombre,
                 })}
@@ -412,29 +372,13 @@ const Tecnico = () => {
               <label htmlFor="ciudad">Ciudad</label>
               <Dropdown
                 id="ciudad"
-                value={tecnico.ciudad.nombre}
+                value={tecnico.ciudad}
                 onChange={e => setDropdownItem(e.value)}
                 options={dropdownItems}
                 optionLabel="nombre"
                 placeholder="Selecciona una ciudad"
               >
               </Dropdown>
-            </div>
-          </Dialog>
-          <Dialog
-            visible={deleteProductsDialog}
-            style={{ width: "450px" }}
-            header="Confirm"
-            modal
-            footer={deleteProductsDialogFooter}
-            onHide={hideDeleteProductsDialog}
-          >
-            <div className="flex align-items-center justify-content-center">
-              <i
-                className="pi pi-exclamation-triangle mr-3"
-                style={{ fontSize: "2rem" }}
-              />
-              {tecnico && <span>Está seguro de borrar estos técnicos?</span>}
             </div>
           </Dialog>
         </div>

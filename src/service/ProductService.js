@@ -23,7 +23,7 @@ export class ProductService {
     return axios.delete("http://localhost:9090/api/v1.0/provincia/" + id);
   }
 
-  getCuidad() {
+  getCiudad() {
     return axios.get("http://localhost:9090/api/v1.0/ciudad").then((res) =>
       res.data
     );

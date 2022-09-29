@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Dropdown } from "primereact/dropdown";
 
 const Register = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
   const [redirect, setRedirect] = useState(false);
 
   const submit = async (e) => {
@@ -41,6 +41,7 @@ const Register = () => {
         );
 
         const content = await response.json();
+        setRole(content)
       }
     )();
   });
@@ -48,7 +49,7 @@ const Register = () => {
   return (
     <div className="container-grid">
       <div className="column-left">
-        <img className="img" src="images/loginImg.png" />
+        <img className="img" src="images/loginImg.png" alt="imagen de portada"/>
       </div>
 
       <div className="column-right">
@@ -58,7 +59,7 @@ const Register = () => {
         <form onSubmit={submit}>
 
           <div className="div-logo">
-            <img className="logo-login" src="images/Logo.jpeg"/>
+            <img className="logo-login" src="images/Logo.jpeg" alt="logo del instituto"/>
           </div>
              
           <h1 className="title">Registro de Servicio Tecnico</h1>

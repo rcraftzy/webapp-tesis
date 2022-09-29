@@ -16,8 +16,8 @@ const Producto = () => {
     codigo: "",
     nombre: "",
     precioVenta: "",
-    stockMin: "",
-    stockMax: "",
+    stockMin: "0",
+    stockMax: "0",
     stock: "",
     controlaStock: false,
     aplicaIva: false,
@@ -47,7 +47,6 @@ const Producto = () => {
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
-  const [switchValue, setSwitchValue] = useState(false);
   const [aplicaIva, setAlicaIva] = useState(false);
 
   useEffect(() => {
@@ -90,7 +89,8 @@ const Producto = () => {
     setSubmitted(true);
 
     const productoService = new ProductoService();
-    
+
+    console.log(producto)
     if (producto.nombre.trim()) {
       let _products = [...productos];
       let _product = { ...producto };
@@ -99,7 +99,17 @@ const Producto = () => {
 
         _products[index] = _product;
 
-        productoService.putProducto(producto.id,{codigo: producto.codigo, nombre: producto.nombre, precioVenta: producto.precioVenta, stockMin: producto.stockMin, stockMax: producto.stockMax, controlaStock: switchValue, aplicaIva: aplicaIva, empresa_id: 1});
+        productoService.putProducto(producto.id, {
+          codigo: producto.codigo,
+          nombre: producto.nombre,
+          precioVenta: parseFloat(producto.precioVenta),
+          stockMin: parseFloat(producto.stockMin),
+          stockMax: parseFloat(producto.stockMax),
+          stock: parseFloat(producto.stock),
+          controlaStock: false,
+          aplicaIva: aplicaIva,
+          empresa_id: 1,
+        });
         toast.current.show({
           severity: "success",
           summary: "Petición exitosa",
@@ -107,7 +117,17 @@ const Producto = () => {
           life: 3000,
         });
       } else {
-        productoService.postProducto({codigo: producto.codigo, nombre: producto.nombre, precioVenta: parseFloat(producto.precioVenta), stockMin: parseFloat(producto.stockMin), stockMax: parseFloat(producto.stockMax),stock: parseFloat(producto.stock), controlaStock: switchValue, aplicaIva: aplicaIva,empresa_id: 1});
+        productoService.postProducto({
+          codigo: producto.codigo,
+          nombre: producto.nombre,
+          precioVenta: parseFloat(producto.precioVenta),
+          stockMin: parseFloat(producto.stockMin),
+          stockMax: parseFloat(producto.stockMax),
+          stock: parseFloat(producto.stock),
+          controlaStock: false,
+          aplicaIva: aplicaIva,
+          empresa_id: 1,
+        });
         _products.push(_product);
         toast.current.show({
           severity: "success",
@@ -126,11 +146,6 @@ const Producto = () => {
   const editProduct = (product) => {
     setProducto({ ...product });
     setProductoDialog(true);
-  };
-
-  const confirmDeleteProduct = (product) => {
-    setProducto(product);
-    setDeleteProductDialog(true);
   };
 
   const deleteProduct = () => {
@@ -181,22 +196,14 @@ const Producto = () => {
     setProducto(_product);
   };
 
-  const onInputNombreChange = (e, nombre) => {
-    const val = e.value || 0;
-    let _product = { ...producto };
-    _product[`${nombre}`] = val;
-
-    setProducto(_product);
-  };
-
   const leftToolbarTemplate = () => {
     return (
-          <Button
-            label="Nuevo"
-            icon="pi pi-plus"
-            className="p-button-success mr-2"
-            onClick={openNew}
-          />
+      <Button
+        label="Nuevo"
+        icon="pi pi-plus"
+        className="p-button-success mr-2"
+        onClick={openNew}
+      />
     );
   };
   const actionBodyTemplate = (rowData) => {
@@ -206,11 +213,6 @@ const Producto = () => {
           icon="pi pi-pencil"
           className="p-button-rounded p-button-success mr-2"
           onClick={() => editProduct(rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-warning mt-2"
-          onClick={() => confirmDeleteProduct(rowData)}
         />
       </div>
     );
@@ -278,6 +280,35 @@ const Producto = () => {
       />
     </>
   );
+  const ivaBodyTemplate = (rowData) => {
+    if (rowData.aplicaIva) {
+      return (
+        <strong
+          style={{
+            background: "#c8e6c9",
+            padding: "5px",
+            borderRadius: "6px",
+            color: "#25602e",
+          }}
+        >
+          Si aplica
+        </strong>
+      );
+    } else {
+      return (
+        <strong
+          style={{
+            background: "#ffcdd2",
+            padding: "5px",
+            borderRadius: "6px",
+            color: "#d33937",
+          }}
+        >
+          No aplica
+        </strong>
+      );
+    }
+  };
 
   return (
     <div className="grid crud-demo">
@@ -311,36 +342,25 @@ const Producto = () => {
             <Column
               field="nombre"
               header="Nombre"
-              headerStyle={{ width: "14%", minWidth: "10rem" }}
+              headerStyle={{ width: "34%", minWidth: "10rem" }}
             >
             </Column>
             <Column
               field="precioVenta"
               header="Precio de venta"
-              headerStyle={{ width: "14%", minWidth: "8rem" }}
-            >
-            </Column>
-            <Column
-              field="stockMin"
-              header="Stock Minimo"
-              headerStyle={{ width: "14%", minWidth: "7rem" }}
-            >
-            </Column>
-            <Column
-              field="stockMax"
-              header="Stock Maximo"
-              headerStyle={{ width: "14%", minWidth: "7rem" }}
+              headerStyle={{ width: "14%", minWidth: "10rem" }}
             >
             </Column>
             <Column
               field="stock"
-              header="Stock Total"
-              headerStyle={{ width: "14%", minWidth: "7rem" }}
+              header="Stock"
+              headerStyle={{ width: "6%", minWidth: "5rem" }}
             >
             </Column>
             <Column
               field="aplicaIva"
               header="Aplica IVA"
+              body={ivaBodyTemplate}
               headerStyle={{ width: "14%", minWidth: "10rem" }}
             >
             </Column>
@@ -349,137 +369,105 @@ const Producto = () => {
 
           <Dialog
             visible={productoDialog}
-            style={{ width: "650px" }}
+            style={{ width: "400px" }}
             header="Producto"
             modal
             className="p-fluid"
             footer={productDialogFooter}
             onHide={hideDialog}
           >
+            <div className="field">
+              <label htmlFor="codigo">Código</label>
+              <InputText
+                id="codigo"
+                value={producto.codigo}
+                onChange={(e) => onInputChange(e, "codigo")}
+                required
+                autoFocus
+                className={classNames({
+                  "p-invalid": submitted && !producto.codigo,
+                })}
+              />
+              {submitted && !producto.codigo && (
+                <small className="p-invalid">
+                  El código del producto es necesario.
+                </small>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="name">Nombre</label>
+              <InputText
+                id="nombre"
+                value={producto.nombre}
+                onChange={(e) => onInputChange(e, "nombre")}
+                required
+                className={classNames({
+                  "p-invalid": submitted && !producto.nombre,
+                })}
+              />
+              {submitted && !producto.nombre && (
+                <small className="p-invalid">
+                  El nombre del producto es necesario.
+                </small>
+              )}
+            </div>
             <div className="grid p-fluid">
-              <div className="col-12 md:col-6">
-                  <div className="field">
-                    <label htmlFor="codigo">Código</label>
-                    <InputText
-                      id="codigo"
-                      value={producto.codigo}
-                      onChange={(e) => onInputChange(e, "codigo")}
-                      required
-                      autoFocus
-                      className={classNames({
-                        "p-invalid": submitted && !producto.codigo,
-                      })}
-                    />
-                    {submitted && !producto.codigo && (
-                      <small className="p-invalid">
-                        El código del producto es necesario.
-                      </small>
-                    )}
+              <div className="col-12 mb-2 lg:col-4 lg:mb-0">
+                <div className="field">
+                  <label htmlFor="precioVenta">Precio de venta</label>
+                  <div className="p-inputgroup">
+                    <span className="p-float-label">
+                      <InputText
+                        id="precioVenta"
+                        value={producto.precioVenta}
+                        onChange={(e) => onInputChange(e, "precioVenta")}
+                        required
+                        className={classNames({
+                          "p-invalid": submitted && !producto.precioVenta,
+                        })}
+                      />
+                      {submitted && !producto.precioVenta && (
+                        <small className="p-invalid">
+                          El precio de venta es necesario.
+                        </small>
+                      )}
+                      <span className="p-inputgroup-addon">$</span>
+                    </span>
                   </div>
-                  <div className="field">
-                    <label htmlFor="name">Nombre</label>
-                    <InputText
-                      id="nombre"
-                      value={producto.nombre}
-                      onChange={(e) => onInputChange(e, "nombre")}
-                      required
-                      className={classNames({
-                        "p-invalid": submitted && !producto.nombre,
-                      })}
-                    />
-                    {submitted && !producto.nombre && (
-                      <small className="p-invalid">
-                        El nombre del producto es necesario.
-                      </small>
-                    )}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="precioVenta">Precio de venta</label>
-                    <InputText
-                      id="precioVenta"
-                      value={producto.precioVenta}
-                      onChange={(e) => onInputChange(e, "precioVenta")}
-                      required
-                      className={classNames({
-                        "p-invalid": submitted && !producto.precioVenta,
-                      })}
-                    />
-                    {submitted && !producto.precioVenta && (
-                      <small className="p-invalid">
-                        El precio de venta es necesario.
-                      </small>
-                    )}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="aplicaIva">Aplica IVA</label>
-                    <br />
-                    <InputSwitch
-                      checked={aplicaIva}
-                      onChange={(e) => setAlicaIva(e.value)}
-                    />
-                  </div>
+                </div>
               </div>
-
-              <div className="col-12 md:col-6">
-                  <div className="field">
-                    <label htmlFor="stockMin">Stock Mínimo</label>
-                    <InputText
-                      id="stockMin"
-                      value={producto.stockMin}
-                      onChange={(e) => onInputChange(e, "stockMin")}
-                      required
-                      className={classNames({
-                        "p-invalid": submitted && !producto.stockMin,
-                      })}
-                    />
-                    {submitted && !producto.stockMin && (
-                      <small className="p-invalid">
-                        El Stock mínimo del producto es necesario.
-                      </small>
-                    )}
+              <div className="col-12 mb-2 lg:col-4 lg:mb-0">
+                <div className="field">
+                  <label htmlFor="stock">Stock</label>
+                  <div className="p-inputgroup">
+                    <span className="p-float-label">
+                      <InputText
+                        id="stock"
+                        value={producto.stock}
+                        onChange={(e) => onInputChange(e, "stock")}
+                        required
+                        className={classNames({
+                          "p-invalid": submitted && !producto.stock,
+                        })}
+                      />
+                      {submitted && !producto.stock && (
+                        <small className="p-invalid">
+                          El stock del producto es necesario.
+                        </small>
+                      )}
+                    </span>
                   </div>
-                  <div className="field">
-                    <label htmlFor="stockMax">Stock Máximo</label>
-                    <InputText
-                      id="stockMax"
-                      value={producto.stockMax}
-                      onChange={(e) => onInputChange(e, "stockMax")}
-                      required
-                      className={classNames({
-                        "p-invalid": submitted && !producto.stockMax,
-                      })}
-                    />
-                    {submitted && !producto.stockMax && (
-                      <small className="p-invalid">
-                        El stock máximo del producto es necesario.
-                      </small>
-                    )}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="name">Stock Total</label>
-                    <InputText
-                      id="stock"
-                      value={producto.stock}
-                      onChange={(e) => onInputChange(e, "stock")}
-                      required
-                      className={classNames({
-                        "p-invalid": submitted && !producto.stock,
-                      })}
-                    />
-                    {submitted && !producto.stock && (
-                      <small className="p-invalid">
-                        El stock total del porducto es necesario.
-                      </small>
-                    )}
-                  </div>
-                  <div className="field">
-                    <label htmlFor="controlaStock">Control de stock</label>
-                    <br />
-                    <InputSwitch
-                      checked={switchValue}
-                      onChange={(e) => setSwitchValue(e.value)}
-                    />
-                  </div>
+                </div>
+              </div>
+              <div className="col-12 mb-2 lg:col-4 lg:mb-0">
+                <div className="field">
+                  <label htmlFor="aplicaIva">Aplica IVA</label>
+                  <br />
+                  <InputSwitch
+                    checked={aplicaIva}
+                    onChange={(e) => setAlicaIva(e.value)}
+                  />
+                </div>
               </div>
             </div>
           </Dialog>

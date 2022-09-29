@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
-import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
-import { EmpresaService } from "../service/EmpresaService";
 import { ColorPicker } from "primereact/colorpicker";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
+import { ProductService } from "../service/ProductService";
 
 import { DataView } from "primereact/dataview";
 
@@ -38,6 +37,8 @@ const Empresa = ({ props }) => {
   const [empresas, setEmpresas] = useState(null);
   const [dropdownItem, setDropdownItem] = useState(null);
   const [dropdownItems, setDropdownItems] = useState(null);
+  // const [dropdownItemCiudad, setDropdownItemCiudad] = useState(null);
+  // const [dropdownItemsCiudad, setDropdownItemsCiudad] = useState(null);
   const [estados, setEstados] = useState(null);
   const [estado, setEstado] = useState(emptyEstado);
   const [colorValue, setColorValue] = useState("1976D2");
@@ -45,6 +46,7 @@ const Empresa = ({ props }) => {
   const [deleteEstadoDialog, setDeleteEstadoDialog] = useState(false);
 
   const [estadoDialog, setEstadoDialog] = useState(false);
+  const [empresaDialog, setEmpresaDialog] = useState(false);
 
   const [submitted, setSubmitted] = useState(false);
   const toast = useRef(null);
@@ -53,11 +55,18 @@ const Empresa = ({ props }) => {
   useEffect(() => {
     API.getEstados().then((data) => setEstados(data));
     APIEmpresa.getEmpresas().then((data) => setEmpresas(data));
+    const ciudad = new ProductService();
+    // ciudad.getProducts().then((data) => setDropdownItems(data));
+    ciudad.getCiudad().then((data) => setDropdownItems(data));
   }, []);
 
   const editProduct = (product) => {
     setEstado({ ...product });
     setEstadoDialog(true);
+  };
+  const editEmpresa = (empresa) => {
+    setEmpresa({ ...empresa });
+    setEmpresaDialog(true);
   };
 
   const actionBodyTemplate = (rowData) => {
@@ -68,11 +77,11 @@ const Empresa = ({ props }) => {
           className="p-button-rounded p-button-success mr-2"
           onClick={() => editProduct(rowData)}
         />
-       <Button
-        icon="pi pi-trash"
-        className="p-button-rounded p-button-warning mt-2"
-        onClick={() => confirmDeleteEstado(rowData)}
-      />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-warning mt-2"
+          onClick={() => confirmDeleteEstado(rowData)}
+        />
       </div>
     );
   };
@@ -80,6 +89,47 @@ const Empresa = ({ props }) => {
   const confirmDeleteEstado = (product) => {
     setEstado(product);
     setDeleteEstadoDialog(true);
+  };
+
+  const saveEmpresa = () => {
+    setSubmitted(true);
+
+    if (empresa.nombre.trim()) {
+      let _products = [...empresas];
+      let _product = { ...empresa };
+      if (empresa.id) {
+        const index = findIndexById(empresa.id);
+
+        _products[index] = _product;
+
+        APIEmpresa.putEmpresas(empresa.id, {
+          ruc: empresa.ruc,
+          nombre: empresa.nombre, 
+          direccion: empresa.direccion,
+          ciudad_id: dropdownItem.id, 
+          telefono: empresa.telefono,
+          email: empresa.email,
+          porcentajeIVA: parseFloat(empresa.porcentajeIVA),
+        });
+        toast.current.show({
+          severity: "success",
+          summary: "Exito",
+          detail: "Datos de la empresa actualizados",
+          life: 3000,
+        });
+      } else {
+          toast.current.show({
+          severity: "success",
+          summary: "Exito",
+          detail: "No puedes crear otra empresa",
+          life: 3000,
+        });
+      }
+
+      setEmpresa(_products);
+      setEmpresaDialog(false);
+      setEmpresa(emptyEmpresa);
+    }
   };
 
   const saveProduct = () => {
@@ -105,7 +155,11 @@ const Empresa = ({ props }) => {
           life: 3000,
         });
       } else {
-        API.postEstado({state: estado.state, color: colorValue, empresa_id: 1})
+        API.postEstado({
+          state: estado.state,
+          color: colorValue,
+          empresa_id: 1,
+        });
 
         _products.push(_product);
 
@@ -137,6 +191,10 @@ const Empresa = ({ props }) => {
     setSubmitted(false);
     setEstadoDialog(false);
   };
+  const hideDialogEmpresa = () => {
+    setSubmitted(false);
+    setEmpresaDialog(false);
+  };
 
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || "";
@@ -144,6 +202,14 @@ const Empresa = ({ props }) => {
     _product[`${name}`] = val;
 
     setEstado(_product);
+  };
+
+  const onInputChangeEmpresa = (e, name) => {
+    const val = (e.target && e.target.value) || "";
+    let _product = { ...empresa };
+    _product[`${name}`] = val;
+
+    setEmpresa(_product);
   };
 
   const estadoDialogFooter = (
@@ -162,6 +228,22 @@ const Empresa = ({ props }) => {
       />
     </>
   );
+  const empresaDialogFooter = (
+    <>
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDialogEmpresa}
+      />
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={saveEmpresa}
+      />
+    </>
+  );
   const openNew = () => {
     setEstado(emptyEstado);
     setSubmitted(false);
@@ -177,7 +259,7 @@ const Empresa = ({ props }) => {
     setDeleteEstadoDialog(false);
     setEstado(emptyEstado);
 
-    API.deleteEstado(estado.id)
+    API.deleteEstado(estado.id);
 
     toast.current.show({
       severity: "success",
@@ -193,14 +275,14 @@ const Empresa = ({ props }) => {
         icon="pi pi-times"
         className="p-button-text"
         onClick={hideDeleteProductDialog}
-        />
+      />
       <Button
         label="Yes"
         icon="pi pi-check"
         className="p-button-text"
         onClick={deleteProduct}
-        />
-      </>
+      />
+    </>
   );
   const itemEmpresa = (data) => {
     return (
@@ -226,9 +308,7 @@ const Empresa = ({ props }) => {
             <strong>Ciudad:</strong>
             <span>{data.ciudad.nombre}</span>
           </div>
-          <div className="mb-3">
-            <strong>Telefono:</strong>
-            <span>{data.telefono}</span>
+          <div className="mb-3"> <strong>Telefono:</strong> <span>{data.telefono}</span>
           </div>
           <div className="mb-3">
             <strong>E-mail:</strong>
@@ -243,6 +323,7 @@ const Empresa = ({ props }) => {
           <Button
             icon="pi pi-pencil"
             className="p-button-rounded p-button-success mr-2"
+            onClick={() => editEmpresa(data)}
           />
         </div>
       </div>
@@ -254,10 +335,10 @@ const Empresa = ({ props }) => {
       <>
         <span className="p-column-title">Color</span>
         <ColorPicker
-            value={rowData.color}
-            style={{ width: "2rem" }}
-          />
-        </>
+          value={rowData.color}
+          style={{ width: "2rem" }}
+        />
+      </>
     );
   };
 
@@ -303,7 +384,7 @@ const Empresa = ({ props }) => {
             </Column>
             <Column body={actionBodyTemplate}></Column>
           </DataTable>
-            <Button
+          <Button
             label="Nuevo"
             icon="pi pi-plus"
             className="p-button-success mr-2"
@@ -348,26 +429,154 @@ const Empresa = ({ props }) => {
           />
         </div>
       </Dialog>
-        <Dialog
-          visible={deleteEstadoDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteEstadoDialogFooter}
-          onHide={hideDeleteProductDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
+      <Dialog
+        visible={empresaDialog}
+        style={{ width: "350px" }}
+        header="Empresa"
+        modal
+        className="p-fluid"
+        footer={empresaDialogFooter}
+        onHide={hideDialogEmpresa}
+      >
+        <div className="field">
+          <label htmlFor="ruc">Ruc</label>
+          <InputText
+            id="ruc"
+            value={empresa.ruc}
+            onChange={(e) => onInputChangeEmpresa(e, "ruc")}
+            required
+            autoFocus
+            className={classNames({
+              "p-invalid": submitted && !empresa.ruc,
+            })}
+          />
+          {submitted && !empresa.ruc && (
+            <small className="p-invalid">
+              El numero de ruc de la empresa es requerido.
+            </small>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="nombre">Nombre</label>
+          <InputText
+            id="nombre"
+            value={empresa.nombre}
+            onChange={(e) => onInputChangeEmpresa(e, "nombre")}
+            required
+            className={classNames({
+              "p-invalid": submitted && !empresa.nombre,
+            })}
+          />
+          {submitted && !empresa.nombre && (
+            <small className="p-invalid">
+              El nombre de la empresa es es requerido.
+            </small>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="direccion">Dirección</label>
+          <InputText
+            id="direccion"
+            value={empresa.direccion}
+            onChange={(e) => onInputChangeEmpresa(e, "direccion")}
+            required
+            className={classNames({
+              "p-invalid": submitted && !empresa.direccion,
+            })}
+          />
+          {submitted && !empresa.direccion && (
+            <small className="p-invalid">
+              La dirección de la empresa es requerido.
+            </small>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="Ciudad">Provincia</label>
+          <Dropdown
+            id="Ciudad"
+            value={empresa.ciudad}
+            onChange={(e) => setDropdownItem(e.value)}
+            options={dropdownItems}
+            optionLabel="nombre"
+            placeholder="Selecciona una Ciudad"
+          >
+          </Dropdown>
+        </div>
+        <div className="field">
+          <label htmlFor="telefono">Teléfono</label>
+          <InputText
+            id="telefono"
+            value={empresa.telefono}
+            onChange={(e) => onInputChangeEmpresa(e, "telefono")}
+            required
+            className={classNames({
+              "p-invalid": submitted && !empresa.telefono,
+            })}
+          />
+          {submitted && !empresa.telefono && (
+            <small className="p-invalid">
+              El número de telefono de la empresa es requerido.
+            </small>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="email">E-mail</label>
+          <InputText
+            id="email"
+            value={empresa.email}
+            onChange={(e) => onInputChangeEmpresa(e, "email")}
+            required
+            className={classNames({
+              "p-invalid": submitted && !empresa.email,
+            })}
+          />
+          {submitted && !empresa.email && (
+            <small className="p-invalid">
+              El correo electronico de la empresa es requerido.
+            </small>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="iva">IVA</label>
+                              <div className="p-inputgroup">
+          <InputText
+            id="porcentajeIVA"
+            value={empresa.porcentajeIVA}
+            onChange={(e) => onInputChangeEmpresa(e, "porcentajeIVA")}
+            required
+            className={classNames({
+              "p-invalid": submitted && !empresa.porcentajeIVA,
+            })}
             />
-            {estado && (
-              <span>
-                Are you sure you want to delete <b>{estado.state}</b>?
-              </span>
-            )}
-          </div>
-        </Dialog>
+                      <span className="p-inputgroup-addon">%</span>
+        </div>
+          {submitted && !empresa.porcentajeIVA && (
+            <small className="p-invalid">
+              El porcentaje de IVA es requerido.
+            </small>
+          )}
+        </div>
+      </Dialog>
+      <Dialog
+        visible={deleteEstadoDialog}
+        style={{ width: "450px" }}
+        header="Confirm"
+        modal
+        footer={deleteEstadoDialogFooter}
+        onHide={hideDeleteProductDialog}
+      >
+        <div className="flex align-items-center justify-content-center">
+          <i
+            className="pi pi-exclamation-triangle mr-3"
+            style={{ fontSize: "2rem" }}
+          />
+          {estado && (
+            <span>
+              Are you sure you want to delete <b>{estado.state}</b>?
+            </span>
+          )}
+        </div>
+      </Dialog>
     </div>
   );
 };

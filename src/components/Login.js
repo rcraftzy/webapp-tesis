@@ -33,7 +33,7 @@ const Login = ({ setData }) => {
   return (
     <div className="container-grid">
       <div className="column-left">
-        <img className="img" src="images/loginImg.png"/>
+        <img className="img" src="images/loginImg.png" alt="una imagen"/>
       </div>
 
       <div className="column-right">
@@ -42,7 +42,7 @@ const Login = ({ setData }) => {
       </span>
         <form onSubmit={submit}>
           <div className="div-logo">
-            <img className="logo-login" src="images/Logo.jpeg"/>
+            <img className="logo-login" src="images/Logo.jpeg" alt="logo del instituto"/>
           </div>
           <h1 className="title">Servicio Tecnico</h1>
           <br />

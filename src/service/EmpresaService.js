@@ -16,13 +16,13 @@ export class EmpresaService {
 }
 
 export const getEmpresas = () => {
-        return axios.get('http://localhost:9090/api/v1.0/empresa')
-            .then(res => res.data);
-    }
+  return axios.get('http://localhost:9090/api/v1.0/empresa')
+    .then(res => res.data);
+}
 export const postEmpresas = (emp) => {
-        return axios.post('http://localhost:9090/api/v1.0/empresa', emp)
-    }
+  return axios.post('http://localhost:9090/api/v1.0/empresa', emp)
+}
 
-export const putEmpresas = (empres) => {
-        return axios.put('http://localhost:9090/api/v1.0/empresa', empres)
-    }
+export const putEmpresas = (id, empres) => {
+  return axios.put('http://localhost:9090/api/v1.0/empresa/'+id, empres)
+}

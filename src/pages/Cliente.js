@@ -100,11 +100,6 @@ const Cliente = () => {
     setClienteDialog(true);
   };
 
-  const confirmDeleteProduct = (product) => {
-    setCliente(product);
-    setDeleteProductDialog(true);
-  };
-
   const deleteProduct = () => {
     let _products = clientes.filter((val) => val.id !== cliente.id);
     setClientes(_products);

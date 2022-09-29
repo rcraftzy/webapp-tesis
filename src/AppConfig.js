@@ -62,10 +62,6 @@ export const AppConfig = (props) => {
         document.documentElement.style.fontSize = scale + 'px';
     }, [scale])
 
-    const toggleConfigurator = (event) => {
-        setActive(prevState => !prevState);
-    }
-
     const configClassName = classNames('layout-config', {
         'layout-config-active': active
     })

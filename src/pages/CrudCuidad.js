@@ -33,7 +33,7 @@ const CrudCuidad = () => {
 
   useEffect(() => {
     const productService = new ProductService();
-    productService.getCuidad().then((data) => setProducts(data));
+    productService.getCiudad().then((data) => setProducts(data));
     productService.getProducts().then((data) => setDropdownItems(data));
   }, []);
 
@@ -250,6 +250,9 @@ const deleteProductDialogFooter = (
     />
   </>
 );
+  const onProvincia = (e) => {
+     setDropdownItem(e.value)
+  }
 const deleteProductsDialogFooter = (
   <>
     <Button
@@ -347,8 +350,8 @@ return (
             <label htmlFor="state">Provincia</label>
             <Dropdown
               id="state"
-              value={product.provincia.nombre}
-              onChange={e => setDropdownItem(e.value)}
+              value={product.provincia}
+              onChange={onProvincia}
               options={dropdownItems}
               optionLabel="nombre"
               placeholder="Selecciona una provincia"
