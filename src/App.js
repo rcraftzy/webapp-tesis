@@ -67,7 +67,6 @@ const App = () => {
           <Route path="/login" element={<Login setData={data} />} />
           <Route
             path="/"
-            exact
             element={
               <Layout>
                 <Home data={data} />
