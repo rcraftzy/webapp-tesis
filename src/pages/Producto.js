@@ -514,4 +514,4 @@ const Producto = () => {
     </div>
   );
 };
-export default Producto;
+export default React.memo(Producto);

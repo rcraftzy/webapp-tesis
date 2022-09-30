@@ -386,4 +386,4 @@ const Tecnico = () => {
     </div>
   );
 };
-export default Tecnico;
+export default React.memo(Tecnico);

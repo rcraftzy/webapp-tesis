@@ -44,7 +44,7 @@ const App = () => {
         getUserEmpresa(content.id);
       }
     )();
-  });
+  }, []);
 
   const getUserEmpresa = async (id) => {
     const response = await fetch(
@@ -77,7 +77,6 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
-            exact
             element={
               <Layout>
                 <Dashboard data={data} />

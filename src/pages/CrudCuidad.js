@@ -407,4 +407,4 @@ return (
 );
 };
 
-export default CrudCuidad;
+export default React.memo(CrudCuidad);

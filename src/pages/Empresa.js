@@ -580,4 +580,4 @@ const Empresa = ({ props }) => {
     </div>
   );
 };
-export default Empresa;
+export default React.memo(Empresa);

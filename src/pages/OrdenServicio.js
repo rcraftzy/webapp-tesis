@@ -907,4 +907,4 @@ const OrdenServicio = () => {
   );
 };
 
-export default OrdenServicio;
+export default React.memo(OrdenServicio);

@@ -540,4 +540,4 @@ const Cliente = () => {
     </div>
   );
 };
-export default Cliente;
+export default React.memo(Cliente)

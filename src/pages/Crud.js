@@ -366,4 +366,4 @@ const Crud = () => {
   );
 };
 
-export default Crud;
+export default React.memo(Crud);
