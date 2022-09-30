@@ -9,6 +9,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { ProductoService } from "../service/ProductoService";
 import { InputSwitch } from "primereact/inputswitch";
+import * as API from "../service/ProductoService";
 
 const Producto = () => {
   let emptyTecnico = {
@@ -50,22 +51,8 @@ const Producto = () => {
   const [aplicaIva, setAlicaIva] = useState(false);
 
   useEffect(() => {
-    (
-      async () => {
-        const response = await fetch(
-          "http://localhost:9090/api/v1.0/producto",
-          {
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-          },
-        );
-
-        const content = await response.json();
-
-        setProductos(content);
-      }
-    )();
-  });
+    API.getProductos().then((data) => setProductos(data))
+  },[]);
   const openNew = () => {
     setProducto(emptyTecnico);
     setSubmitted(false);

@@ -8,7 +8,7 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import * as API from "../service/TecnicoService";
-// import * as APICiudad from "../service/ProductService";
+import * as APICiudad from "../service/CiudadService";
 
 import { Dropdown } from "primereact/dropdown";
 
@@ -59,33 +59,9 @@ const Tecnico = () => {
   const [dropdownItems, setDropdownItems] = useState(null);
 
   useEffect(() => {
-    (
-      async () => {
-        const response = await fetch("http://localhost:9090/api/v1.0/tecnico", {
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        const content = await response.json();
-
-        setTecnicos(content);
-      }
-    )();
-  });
-  useEffect(() => {
-    (
-      async () => {
-        const response = await fetch("http://localhost:9090/api/v1.0/ciudad", {
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        const content = await response.json();
-
-        setDropdownItems(content);
-      }
-    )();
-  });
+    API.getTecnicos().then((data) => setTecnicos(data))
+    APICiudad.getCiudades().then((data) => setDropdownItems(data))
+  }, []);
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || "";
     let _product = { ...tecnico };

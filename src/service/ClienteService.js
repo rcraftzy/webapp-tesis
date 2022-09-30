@@ -1,8 +1,8 @@
 import axios from "axios";
 
 export class ClienteService {
-  async getClientes() {
-    return await axios.get("http://localhost:9090/api/v1.0/clientes")
+  getClientes() {
+    return axios.get("http://localhost:9090/api/v1.0/clientes")
       .then((res) => res.data);
   }
 
@@ -11,6 +11,11 @@ export class ClienteService {
   }
 
   putClientes(id, clien) {
-    return axios.put("http://localhost:9090/api/v1.0/clientes/"+id, clien);
+    return axios.put("http://localhost:9090/api/v1.0/clientes/" + id, clien);
   }
+}
+
+export function getClientes() {
+  return axios.get("http://localhost:9090/api/v1.0/clientes")
+    .then((res) => res.data);
 }

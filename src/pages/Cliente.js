@@ -8,6 +8,7 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { ClienteService } from "../service/ClienteService";
+import * as API from "../service/ClienteService";
 
 const Cliente = () => {
   let emptyCliente = {
@@ -34,8 +35,7 @@ const Cliente = () => {
   const dt = useRef(null);
 
   useEffect(() => {
-    const clienteService = new ClienteService();
-    clienteService.getClientes().then((data) => setClientes(data));
+    API.getClientes().then((data) => setClientes(data));
   }, []);
 
   const openNew = () => {

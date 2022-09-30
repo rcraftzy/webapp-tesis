@@ -16,3 +16,10 @@ export class ProductoService {
     return axios.delete("http://localhost:9090/api/v1.0/producto/" + id);
   }
 }
+
+export function getProductos() {
+  return axios.get("http://localhost:9090/api/v1.0/producto").then((
+    res,
+  ) => res.data);
+}
+
