@@ -15,7 +15,7 @@ import classNames from "classnames";
 import * as API from "../service/EstadoService";
 import * as APIEmpresa from "../service/EmpresaService";
 
-const Empresa = ({ props }) => {
+const Empresa = (props) => {
   let emptyEmpresa = {
     id: null,
     ruc: "",
@@ -34,7 +34,7 @@ const Empresa = ({ props }) => {
   };
 
   const [empresa, setEmpresa] = useState(emptyEmpresa);
-  const [empresas, setEmpresas] = useState(null);
+  const [empresas, setEmpresas] = useState(props.empresas);
   const [dropdownItem, setDropdownItem] = useState(null);
   const [dropdownItems, setDropdownItems] = useState(null);
   // const [dropdownItemCiudad, setDropdownItemCiudad] = useState(null);
@@ -51,15 +51,16 @@ const Empresa = ({ props }) => {
   const [submitted, setSubmitted] = useState(false);
   const toast = useRef(null);
   const dt = useRef(null);
-
+  
   useEffect(() => {
     API.getEstados().then((data) => setEstados(data));
-    APIEmpresa.getEmpresas().then((data) => setEmpresas(data));
+    // API.getEstado().then((data) => setEstados(data));
     const ciudad = new ProductService();
+    setEmpresas(props.empresa)
+    // APIEmpresa.getEmpresas().then((data) => setEmpresas(data))
     // ciudad.getProducts().then((data) => setDropdownItems(data));
     ciudad.getCiudad().then((data) => setDropdownItems(data));
-  }, []);
-
+  }, [props]);
   const editProduct = (product) => {
     setEstado({ ...product });
     setEstadoDialog(true);
@@ -347,13 +348,15 @@ const Empresa = ({ props }) => {
       <div className="col-12 xl:col-6">
         <div className="card">
           <h5>Datos de la empresa</h5>
-          <DataView
+          {
+          empresas && <DataView
             value={empresas}
             layout="grid"
             rows={4}
             itemTemplate={itemEmpresa}
+            emptyMessage="Datos no econtrados"
           >
-          </DataView>
+          </DataView>}
         </div>
       </div>
       <div className="col-12 md:col-6">

@@ -78,7 +78,7 @@ const App = () => {
             path="/dashboard"
             element={
               <Layout>
-                <Dashboard data={data} />
+                <Dashboard {...empresa} />
               </Layout>
             }
           />

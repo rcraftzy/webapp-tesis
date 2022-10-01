@@ -30,6 +30,7 @@ export const putEstado = (id, estado) => {
     estado,
   );
 };
+
 export const postEstado = (estado) => {
   return axios.post(
     "http://localhost:9090/api/v1.0/estadoordenservicio",

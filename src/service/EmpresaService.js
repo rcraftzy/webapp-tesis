@@ -19,6 +19,11 @@ export const getEmpresas = () => {
   return axios.get('http://localhost:9090/api/v1.0/empresa')
     .then(res => res.data);
 }
+export const getEmpresa = (id) => {
+  return axios.get('http://localhost:9090/api/v1.0/empresa/'+id)
+    .then(res => res.data);
+}
+
 export const postEmpresas = (emp) => {
   return axios.post('http://localhost:9090/api/v1.0/empresa', emp)
 }
