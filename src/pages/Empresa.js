@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
+import classNames from "classnames";
+
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
@@ -6,22 +8,29 @@ import { ColorPicker } from "primereact/colorpicker";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
-import { ProductService } from "../service/ProductService";
-
 import { DataView } from "primereact/dataview";
 
-import classNames from "classnames";
+import { Toast } from "primereact/toast";
 
+import { DataContext } from "../context/DataContext";
+import { ProductService } from "../service/ProductService";
 import * as API from "../service/EstadoService";
 import * as APIEmpresa from "../service/EmpresaService";
 
-const Empresa = (props) => {
+const Empresa = () => {
   let emptyEmpresa = {
     id: null,
     ruc: "",
     nombre: "",
     direccion: "",
-    ciudad: "",
+    ciudad: {
+      id: null,
+      nombre: "",
+      provincia: {
+        id: null,
+        nombre: ""
+      }
+    },
     telefono: "",
     email: "",
     porcentajeIVA: "",
@@ -30,17 +39,17 @@ const Empresa = (props) => {
     id: null,
     state: "",
     color: "",
-    empresa_id: 0,
+    empresa_id: null,
   };
 
+  const {data} = useContext(DataContext)
   const [empresa, setEmpresa] = useState(emptyEmpresa);
-  const [empresas, setEmpresas] = useState(props.empresas);
+  const [empresas, setEmpresas] = useState(emptyEmpresa);
+  const [estados, setEstados] = useState([]);
+  const [estado, setEstado] = useState(emptyEstado);
+
   const [dropdownItem, setDropdownItem] = useState(null);
   const [dropdownItems, setDropdownItems] = useState(null);
-  // const [dropdownItemCiudad, setDropdownItemCiudad] = useState(null);
-  // const [dropdownItemsCiudad, setDropdownItemsCiudad] = useState(null);
-  const [estados, setEstados] = useState(null);
-  const [estado, setEstado] = useState(emptyEstado);
   const [colorValue, setColorValue] = useState("1976D2");
 
   const [deleteEstadoDialog, setDeleteEstadoDialog] = useState(false);
@@ -53,17 +62,18 @@ const Empresa = (props) => {
   const dt = useRef(null);
   
   useEffect(() => {
-    API.getEstados().then((data) => setEstados(data));
-    // API.getEstado().then((data) => setEstados(data));
+    setEmpresas(data.empresa)
+    API.getEstado(data.empresa.id).then((data) => setEstados(data));
+
     const ciudad = new ProductService();
-    setEmpresas(props.empresa)
-    // APIEmpresa.getEmpresas().then((data) => setEmpresas(data))
-    // ciudad.getProducts().then((data) => setDropdownItems(data));
     ciudad.getCiudad().then((data) => setDropdownItems(data));
-  }, [props]);
+  }, [data.empresa]);
+
   const editProduct = (product) => {
     setEstado({ ...product });
+    setEmpresa(empresas)
     setEstadoDialog(true);
+    setColorValue(product.color)
   };
   const editEmpresa = (empresa) => {
     setEmpresa({ ...empresa });
@@ -93,25 +103,24 @@ const Empresa = (props) => {
   };
 
   const saveEmpresa = () => {
+
     setSubmitted(true);
 
     if (empresa.nombre.trim()) {
-      let _products = [...empresas];
-      let _product = { ...empresa };
+
       if (empresa.id) {
-        const index = findIndexById(empresa.id);
-
-        _products[index] = _product;
-
+        console.log("hola")
+        console.log(empresa)
         APIEmpresa.putEmpresas(empresa.id, {
           ruc: empresa.ruc,
           nombre: empresa.nombre, 
           direccion: empresa.direccion,
-          ciudad_id: dropdownItem.id, 
+          ciudad_id: 1, 
           telefono: empresa.telefono,
           email: empresa.email,
           porcentajeIVA: parseFloat(empresa.porcentajeIVA),
         });
+
         toast.current.show({
           severity: "success",
           summary: "Exito",
@@ -127,7 +136,6 @@ const Empresa = (props) => {
         });
       }
 
-      setEmpresa(_products);
       setEmpresaDialog(false);
       setEmpresa(emptyEmpresa);
     }
@@ -135,10 +143,11 @@ const Empresa = (props) => {
 
   const saveProduct = () => {
     setSubmitted(true);
-
     if (estado.state.trim()) {
       let _products = [...estados];
       let _product = { ...estado };
+      console.log(_products)
+      console.log(_product)
       if (estado.id) {
         const index = findIndexById(estado.id);
 
@@ -147,7 +156,7 @@ const Empresa = (props) => {
         API.putEstado(estado.id, {
           state: estado.state,
           color: colorValue,
-          empresa_id: 1,
+          empresa_id: empresa.id,
         });
         toast.current.show({
           severity: "success",
@@ -159,10 +168,13 @@ const Empresa = (props) => {
         API.postEstado({
           state: estado.state,
           color: colorValue,
-          empresa_id: 1,
+          empresa_id: empresa.id,
         });
 
-        _products.push(_product);
+        _products.push({
+          state: estado.state,
+          color: colorValue,
+        });
 
         toast.current.show({
           severity: "success",
@@ -247,6 +259,7 @@ const Empresa = (props) => {
   );
   const openNew = () => {
     setEstado(emptyEstado);
+    setEmpresa(empresas)
     setSubmitted(false);
     setEstadoDialog(true);
   };
@@ -287,37 +300,38 @@ const Empresa = (props) => {
   );
   const itemEmpresa = (data) => {
     return (
+
       <div className="col-12">
         <div className="flex-1 text-center md:text-left">
           <div className="mb-3">
             <strong>Ruc:</strong>
-            <span>{data.ruc}</span>
+            <span>&nbsp;{data.ruc}</span>
           </div>
           <div className="mb-3">
             <strong>Nombre:</strong>
-            <span>{data.nombre}</span>
+            <span>&nbsp;{data.nombre}</span>
           </div>
           <div className="mb-3">
             <strong>Direccion:</strong>
-            <span>{data.direccion}</span>
+            <span>&nbsp;{data.direccion}</span>
           </div>
           <div className="mb-3">
             <strong>Provincia:</strong>
-            <span>{data.ciudad.provincia.nombre}</span>
+            <span>&nbsp;{data.ciudad.provincia.nombre}</span>
           </div>
           <div className="mb-3">
             <strong>Ciudad:</strong>
-            <span>{data.ciudad.nombre}</span>
+            <span>&nbsp;{data.ciudad.nombre}</span>
           </div>
           <div className="mb-3"> <strong>Telefono:</strong> <span>{data.telefono}</span>
           </div>
           <div className="mb-3">
             <strong>E-mail:</strong>
-            <span>{data.email}</span>
+            <span>&nbsp;{data.email}</span>
           </div>
           <div className="mb-3">
             <strong>IVA:</strong>
-            <span>{data.porcentajeIVA}</span>
+            <span>&nbsp;{data.porcentajeIVA}%</span>
           </div>
         </div>
         <div className="flex flex-row md:flex-column justify-content-between w-full md:w-auto align-items-center md:align-items-end mt-5 md:mt-0">
@@ -345,12 +359,13 @@ const Empresa = (props) => {
 
   return (
     <div className="grid p-fluid">
+      <Toast ref={toast} />
       <div className="col-12 xl:col-6">
         <div className="card">
           <h5>Datos de la empresa</h5>
           {
           empresas && <DataView
-            value={empresas}
+            value={[empresas]}
             layout="grid"
             rows={4}
             itemTemplate={itemEmpresa}
@@ -362,12 +377,11 @@ const Empresa = (props) => {
       <div className="col-12 md:col-6">
         <div className="card">
           <h5>Estados de orden de servicio</h5>
-          <DataTable
+          {estados && <DataTable
             ref={dt}
             value={estados}
             dataKey="id"
-            rows={10}
-            rowsPerPageOptions={[5, 10, 25]}
+            rows={16}
             className="datatable-responsive"
             emptyMessage="Registros no encontrados."
             responsiveLayout="scroll"
@@ -387,6 +401,7 @@ const Empresa = (props) => {
             </Column>
             <Column body={actionBodyTemplate}></Column>
           </DataTable>
+          }
           <Button
             label="Nuevo"
             icon="pi pi-plus"

@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { DataContext } from "../context/DataContext";
 
-const Login = ({ setData }) => {
+const Login = () => {
+  const {setUser} = useContext(DataContext)
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +25,7 @@ const Login = ({ setData }) => {
     const content = await response.json();
 
     setRedirect(true);
-    setData(content.name);
+    setUser(content.name);
   };
 
   if (redirect) {

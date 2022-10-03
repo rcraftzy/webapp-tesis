@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 
 import "primereact/resources/primereact.css";
@@ -12,6 +12,8 @@ import "./App.scss";
 
 // import { ProtectedRoute } from "./components/ProtectedRoute";
 // import { AuthProvider } from "./context/AuthContext";
+import { DataProvider } from "./context/DataContext";
+
 const Login = lazy(() => import("./components/Login"));
 const Register = lazy(() => import("./components/Register"));
 const Layout = lazy(() => import("./components/Layout"));
@@ -27,49 +29,17 @@ const Cliente = lazy(() => import("./pages/Cliente"));
 const Tecnico = lazy(() => import("./pages/Tecnico"));
 
 const App = () => {
-  const [data, setData] = useState("");
-  const [empresa, setEmpresa] = useState("");
-
-  useEffect(() => {
-    (
-      async () => {
-        const response = await fetch("http://localhost:9090/api/user", {
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-
-        const content = await response.json();
-
-        setData(content);
-        getUserEmpresa(content.id);
-      }
-    )();
-  }, []);
-
-  const getUserEmpresa = async (id) => {
-    const response = await fetch(
-      "http://localhost:9090/api/v1.0/empresaUser/" + id,
-      {
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      },
-    );
-
-    const content = await response.json();
-
-    setEmpresa(content);
-  };
 
   return (
-    <>
+    <DataProvider>
       <Suspense fallback={<div />}>
         <Routes>
-          <Route path="/login" element={<Login setData={data} />} />
+          <Route path="/login" element={<Login />} />
           <Route
             path="/"
             element={
               <Layout>
-                <Home data={data} />
+                <Home />
               </Layout>
             }
           />
@@ -78,7 +48,7 @@ const App = () => {
             path="/dashboard"
             element={
               <Layout>
-                <Dashboard {...empresa} />
+                <Dashboard />
               </Layout>
             }
           />
@@ -134,13 +104,13 @@ const App = () => {
             path="/empresa"
             element={
               <Layout>
-                <Empresa {...empresa} />
+                <Empresa />
               </Layout>
             }
           />
         </Routes>
       </Suspense>
-    </>
+    </DataProvider>
   );
 };
 
