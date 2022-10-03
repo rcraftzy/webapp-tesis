@@ -55,6 +55,7 @@ const Producto = () => {
   },[]);
   const openNew = () => {
     setProducto(emptyTecnico);
+    setAlicaIva(null)
     setSubmitted(false);
     setProductoDialog(true);
   };
@@ -85,6 +86,7 @@ const Producto = () => {
         const index = findIndexById(producto.id);
 
         _products[index] = _product;
+        console.log(_product)
 
         productoService.putProducto(producto.id, {
           codigo: producto.codigo,
@@ -99,7 +101,7 @@ const Producto = () => {
         });
         toast.current.show({
           severity: "success",
-          summary: "Petición exitosa",
+          summary: "Exito",
           detail: "Técnico actualizado",
           life: 3000,
         });
@@ -115,10 +117,20 @@ const Producto = () => {
           aplicaIva: aplicaIva,
           empresa_id: 1,
         });
-        _products.push(_product);
+        _products.push({
+          codigo: producto.codigo,
+          nombre: producto.nombre,
+          precioVenta: parseFloat(producto.precioVenta),
+          stockMin: parseFloat(producto.stockMin),
+          stockMax: parseFloat(producto.stockMax),
+          stock: parseFloat(producto.stock),
+          controlaStock: false,
+          aplicaIva: aplicaIva,
+          empresa_id: 1,
+        });
         toast.current.show({
           severity: "success",
-          summary: "Petición exitosa",
+          summary: "Exito",
           detail: "Técnico creado",
           life: 3000,
         });
@@ -132,6 +144,7 @@ const Producto = () => {
 
   const editProduct = (product) => {
     setProducto({ ...product });
+    setAlicaIva(product.aplicaIva)
     setProductoDialog(true);
   };
 
@@ -413,12 +426,13 @@ const Producto = () => {
                           "p-invalid": submitted && !producto.precioVenta,
                         })}
                       />
+                      <span className="p-inputgroup-addon">$</span>
                       {submitted && !producto.precioVenta && (
                         <small className="p-invalid">
+                          <br />
                           El precio de venta es necesario.
                         </small>
                       )}
-                      <span className="p-inputgroup-addon">$</span>
                     </span>
                   </div>
                 </div>

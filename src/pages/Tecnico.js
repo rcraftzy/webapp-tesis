@@ -71,6 +71,7 @@ const Tecnico = () => {
   };
   const openNew = () => {
     setTecnico(emptyTecnico);
+    setDropdownItem(null)
     setSubmitted(false);
     setTecnicoDialog(true);
   };
@@ -127,6 +128,8 @@ const Tecnico = () => {
   
   const editProduct = (product) => {
     setTecnico({ ...product });
+    setDropdownItem(product.ciudad)
+    console.log(product.ciudad)
     setTecnicoDialog(true);
   };
   const actionBodyTemplate = (rowData) => {
@@ -345,10 +348,10 @@ const Tecnico = () => {
               )}
             </div>
             <div className="field">
-              <label htmlFor="ciudad">Ciudad</label>
+              <label htmlFor="nombre">Ciudad</label>
               <Dropdown
-                id="ciudad"
-                value={tecnico.ciudad}
+                id="nombre"
+                value={dropdownItem}
                 onChange={e => setDropdownItem(e.value)}
                 options={dropdownItems}
                 optionLabel="nombre"

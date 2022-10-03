@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
+
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Toast } from "primereact/toast";
 import { Button } from "primereact/button";
@@ -7,6 +8,11 @@ import { Toolbar } from "primereact/toolbar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { DataView } from "primereact/dataview";
+import { InputTextarea } from "primereact/inputtextarea";
+import { Dropdown } from "primereact/dropdown";
+import { OverlayPanel } from "primereact/overlaypanel";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
 
 import { OrdenServicioService } from "../service/OrdenServicioService";
 import { ClienteService } from "../service/ClienteService";
@@ -14,30 +20,78 @@ import { getTecnicos } from "../service/TecnicoService";
 import { EstadoService } from "../service/EstadoService";
 import { ProductoService } from "../service/ProductoService";
 
-// Import for form
-import { InputTextarea } from "primereact/inputtextarea";
-import { Dropdown } from "primereact/dropdown";
-
-import { OverlayPanel } from "primereact/overlaypanel";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-
 const OrdenServicio = () => {
+  let emptyProducto = {
+    id: null,
+    codigo: "",
+    nombre: "",
+    precioVenta: "",
+    stockMin: "",
+    stockMax: "",
+    stock: "",
+    controlaStock: false,
+    aplicaIva: false,
+    empresa: {
+      id: null,
+    },
+  };
+  let emptyTecnico = {
+    id: null,
+    cedula: "",
+    nombre: "",
+    apellido: "",
+    email: "",
+    telefono: "",
+    direccion: "",
+    ciudad: {
+      id: null,
+      nombre: "",
+      provincia: {
+        id: null,
+        nombre: "",
+      },
+    },
+    empresa: {
+      id: null,
+      ruc: "",
+      nombre: "",
+      direccion: "",
+      ciudad: {
+        id: null,
+        nombre: "",
+        provincia: {
+          id: null,
+          nombre: "",
+        },
+      },
+      telefono: "",
+      email: "",
+      porcentajeIVA: "",
+    },
+  };
   let emptyDetalleOrdenServicio = {
     id: null,
     orden_servicio: {},
-    cantidad: null,
+    cantidad: "",
     producto: {},
     descripcion: "",
-    precio_unitario: 0,
-    descuento: "0",
-    porcentaje_IVA: 12,
-    valor_IVA: 1.2,
-    total: 0,
-    diagnostico_recepcion: "",
-    diagnostico_tecnico: "",
-    descripcion_diagnostico_tecnico: "",
+    precio_unitario: null,
+    descuento: null,
+    porcentaje_IVA: null,
+    valor_IVA: null,
+    total: null,
     estado_orden_servcio: {},
+  };
+  let emptyCliente = {
+    id: null,
+    nombres: "",
+    apellidos: "",
+    dni: "",
+    direccion: "",
+    telefono: "",
+    celular: "",
+    email: "",
+    estado: null,
   };
   let emptyOrdenServicio = {
     id: null,
@@ -93,6 +147,8 @@ const OrdenServicio = () => {
     valor_IVA: "",
     total: "",
     observaciones: "",
+    diagnostico_recepcion: "",
+    diagnostico_tecnico: "",
   };
 
   const [ordenesServicio, setOrdenesServicio] = useState(null);
@@ -101,14 +157,10 @@ const OrdenServicio = () => {
   const [productDialog, setProductDialog] = useState(false);
 
   const [ordenServicio, setOrdenServicio] = useState(emptyOrdenServicio);
-  const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(
-    emptyOrdenServicio,
-  );
+  const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(emptyDetalleOrdenServicio);
 
   const [submitted, setSubmitted] = useState(false);
   const toast = useRef(null);
-
-  const [dropdownValue, setDropdownValue] = useState(null);
 
   const [clientes, setClientes] = useState(null);
   const [cliente, setCliente] = useState(null);
@@ -147,13 +199,6 @@ const OrdenServicio = () => {
     productoService.getProductos().then((data) => setProductos(data));
   }, []);
 
-  const getDetallesForOrden = async (id) => {
-    const ordenServicioService = new OrdenServicioService();
-    ordenServicioService.getDetallesO(id).then((data) =>
-      setDetalleOrdenesServicio(data)
-    );
-  };
-
   const onProductSelect = (event) => {
     op2.current.hide();
     setCliente(event.data);
@@ -177,6 +222,7 @@ const OrdenServicio = () => {
   const onProductoSelect = (event) => {
     op1.current.hide();
     setProducto(event.data);
+    console.log(producto);
     toast.current.show({
       severity: "info",
       summary: "Producto seleccionado",
@@ -198,12 +244,19 @@ const OrdenServicio = () => {
 
   const openNew = () => {
     setOrdenServicio(emptyOrdenServicio);
+    setDetalleOrdenServicio(emptyDetalleOrdenServicio);
+    setTecnico(emptyTecnico);
+    setCliente(emptyCliente);
+    setEstado(null);
+    setProducto(emptyProducto);
     setSubmitted(false);
     setProductDialog(true);
   };
 
   const openNewDetalle = () => {
     setDetalleOrdenServicio(emptyDetalleOrdenServicio);
+    setProducto(emptyProducto);
+    setEstado(ordenServicio.estado_orden_servicio);
     setSubmitted(false);
     setOrdenDialog(true);
   };
@@ -230,9 +283,8 @@ const OrdenServicio = () => {
 
         _ordenesServicio[index] = _ordenServicio;
 
-        orden.putProvincia(_ordenServicio);
         orden.putOrden(ordenServicio.id, {
-          numOrden: "4",
+          numOrden: "1",
           empresa_id: 1,
           cliente_id: cliente.id,
           fecha_emision: "2022-09-28",
@@ -244,6 +296,8 @@ const OrdenServicio = () => {
           valor_IVA: 12.0,
           total: 0.0,
           observaciones: ordenServicio.observaciones,
+          diagnostico_recepcion: ordenServicio.diagnostico_recepcion, 
+          diagnostico_tecnico: ordenServicio.diagnostico_tecnico
         });
         toast.current.show({
           severity: "success",
@@ -253,7 +307,7 @@ const OrdenServicio = () => {
         });
       } else {
         orden.postOrden({
-          numero_orden: "4",
+          numeOrden: ordenServicio.id,
           empresa_id: 1,
           cliente_id: cliente.id,
           fecha_emision: "2022-05-03",
@@ -265,6 +319,8 @@ const OrdenServicio = () => {
           valor_IVA: 12.0,
           total: 0.0,
           observaciones: ordenServicio.observaciones,
+          diagnostico_recepcion: ordenServicio.diagnostico_recepcion, 
+          diagnostico_tecnico: ordenServicio.diagnostico_tecnico
         });
 
         toast.current.show({
@@ -284,7 +340,7 @@ const OrdenServicio = () => {
     setSubmitted(true);
     const detalle = new OrdenServicioService();
 
-    if (detalleOrdenServicio.descuento.trim()) {
+    if (detalleOrdenServicio.cantidad.trim()) {
       let _ordenesServicio = [...detalleOrdenesServicio];
       let _ordenServicio = { ...detalleOrdenServicio };
       if (detalleOrdenServicio.id) {
@@ -299,35 +355,33 @@ const OrdenServicio = () => {
           life: 3000,
         });
       } else {
-        console.log(dropdownValue);
         detalle.postDetalle({
           orden_servicio_id: 1,
-          cantidad: 1,
+          cantidad: parseFloat(detalleOrdenServicio.cantidad),
           producto_id: producto.id,
           descripcion: producto.nombre,
           precio_unitario: producto.precioVenta,
-          descuento: parseFloat(detalleOrdenServicio.descuento),
+          descuento: 12,
           porcentaje_IVA: 12,
           valor_IVA: 1.2,
           total: 20,
           diagnostico_recepcion: "",
           diagnostico_tecnico: "",
-          descripcion_diagnostico_tecnico: "",
-          estado_orden_servcio_id: dropdownValue.id,
+          estado_orden_servicio_id: estado.id
         });
 
         _ordenesServicio.push(_ordenServicio);
         toast.current.show({
           severity: "success",
-          summary: "Successful",
-          detail: "Product Created",
+          summary: "Exito",
+          detail: "Detalle de la orden agregado",
           life: 3000,
         });
       }
 
-      setOrdenesServicio(_ordenesServicio);
-      setProductDialog(false);
-      setOrdenServicio(emptyOrdenServicio);
+      setDetalleOrdenesServicio(_ordenesServicio);
+      setOrdenDialog(false);
+      setDetalleOrdenServicio(emptyDetalleOrdenServicio);
     }
   };
 
@@ -402,6 +456,9 @@ const OrdenServicio = () => {
 
   const editOrden = (orden) => {
     setOrdenServicio({ ...orden });
+    setTecnico(orden.tecnico);
+    setCliente(orden.cliente);
+    setEstado(orden.estado_orden_servicio);
     setProductDialog(true);
   };
 
@@ -413,7 +470,7 @@ const OrdenServicio = () => {
             <div className="flex-1 text-center md:text-left">
               <div>
                 <i className="pi pi-hashtag" />
-                <span>{data.numOrden}</span>
+                <span>{data.id}</span>
               </div>
               <div className="mt-2 mb-2">
                 Técnico<span className="font-semibold m-2">
@@ -490,6 +547,41 @@ const OrdenServicio = () => {
                   headerStyle={{ minWidth: "8rem" }}
                 />
               </DataTable>
+              <br />
+
+              <div className="grid">
+                <div className="col-12 lg:col-8">
+                  <div className="card border-1 surface-border">
+                    <strong>Diagnostico en técnico:</strong>
+                    <p>{data.diagnostico_tecnico}</p>
+                  </div>
+                  <div className="card border-1 surface-border">
+                    <strong>Diagnostico en recepción:</strong>
+                    <p>{data.diagnostico_recepcion}</p>
+                  </div>
+                </div>
+                <div className="col-12 lg:col-4">
+                  <div className="card border-1 surface-border">
+                    <div>
+                      <strong>Descuento:</strong>
+                      <span>&nbsp;{data.descuento}</span>
+                      <div>
+                        <strong>Total IVA:</strong>
+                        <span>&nbsp;{data.valor_IVA}</span>
+                      </div>
+                    </div>
+                    <strong>Sub total sin IVA:</strong>
+                    <span>&nbsp;{data.sub_total_sin_IVA}</span>
+                    <div>
+                      <strong>Sub total con IVA:</strong>
+                      <span>&nbsp;{data.sub_total_con_IVA}</span>
+                    </div>
+                    <hr />
+                    <strong>Total:</strong>
+                    <span>&nbsp;{data.total}</span>
+                  </div>
+                </div>
+              </div>
             </AccordionTab>
           </Accordion>
         </div>
@@ -510,38 +602,99 @@ const OrdenServicio = () => {
 
     setOrdenServicio(_product);
   };
-  const itemTecnico = (data) => {
-    return ( 
-    <div className="col-12">
+  const onInputChangeDetalle = (e, name) => {
+    const val = (e.target && e.target.value) || "";
+    let _product = { ...detalleOrdenServicio };
+    _product[`${name}`] = val;
+
+    setDetalleOrdenServicio(_product);
+  };
+
+  const itemTemplateProducto = (data) => {
+    return (
+      <div className="col-12">
         <div className="flex-1 text-center md:text-left">
-          <div className="mb-3">
-            <strong>Cedula:</strong>
-            <span>{data.cedula}</span>
+          <div className="mb-3 ml-3">
+            <strong>Código:</strong>
+            <span>&nbsp;{data.codigo}</span>
           </div>
-          <div className="mb-3">
-            <strong>Nombre:</strong>
-            <span>{data.nombre}</span>
+          <div className="mb-3 ml-3">
+            <strong>Descripcion:</strong>
+            <span>&nbsp;{data.nombre}</span>
           </div>
-            <div className="mb-3">
-            <strong>Apellido:</strong>
-            <span>{data.apellido}</span>
-          </div>
-          <div className="mb-3">
-            <strong>Direccion:</strong>
-            <span>{data.direccion}</span>
-          </div>
-          <div className="mb-3">
-            <strong>Telefono:</strong>
-            <span>{data.telefono}</span>
-          </div>
-          <div className="mb-3">
-            <strong>Ciudad:</strong>
-            <span>{data.ciudad.nombre}</span>
+          <div className="mb-3 ml-3">
+            <strong>Precio de venta:</strong>
+            <span>&nbsp;{data.precioVenta}</span>
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
+
+  const itemCliente = (data) => {
+    return (
+      <div className="col-12">
+        <div className="flex-1 text-center md:text-left">
+          <div className="mb-3 ml-3">
+            <strong>Cédula:</strong>
+            <span>&nbsp;{data.dni}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Nombre:</strong>
+            <span>&nbsp;{data.nombres}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Apellido:</strong>
+            <span>&nbsp;{data.apellidos}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Dirección:</strong>
+            <span>&nbsp;{data.direccion}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Teléfono:</strong>
+            <span>&nbsp;{data.telefono}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>E-mail:</strong>
+            <span>&nbsp;{data.email}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  const itemTecnico = (data) => {
+    return (
+      <div className="col-12">
+        <div className="flex-1 text-center md:text-left">
+          <div className="mb-3 ml-3">
+            <strong>Cédula:</strong>
+            <span>&nbsp;{data.cedula}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Nombre:</strong>
+            <span>&nbsp;{data.nombre}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Apellido:</strong>
+            <span>&nbsp;{data.apellido}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Dirección:</strong>
+            <span>&nbsp;{data.direccion}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Teléfono:</strong>
+            <span>&nbsp;{data.telefono}</span>
+          </div>
+          <div className="mb-3 ml-3">
+            <strong>Ciudad:</strong>
+            <span>&nbsp;{data.ciudad.nombre}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="grid crud-demo">
@@ -576,18 +729,18 @@ const OrdenServicio = () => {
                 <div className="col-12 mb-2 lg:col-6 lg:mb-0">
                   <Button
                     type="button"
-                    label="Seleccionar de técnico"
+                    label="Seleccionar técnico"
                     onClick={toggleDataTableTecnico}
                     className="p-button-success"
                   />
                 </div>
                 <DataView
-                  value={tecnico}
+                  value={[tecnico]}
                   layout="grid"
                   rows={4}
                   emptyMessage=" "
                   itemTemplate={itemTecnico}
-                  />
+                />
               </div>
               <OverlayPanel
                 ref={op1}
@@ -608,7 +761,7 @@ const OrdenServicio = () => {
                 >
                   <Column
                     field="cedula"
-                    header="Cedula"
+                    header="Cédula"
                     sortable
                     headerStyle={{ minWidth: "10rem" }}
                   />
@@ -626,6 +779,26 @@ const OrdenServicio = () => {
                   />
                 </DataTable>
               </OverlayPanel>
+              <h5>Estado</h5>
+              <Dropdown
+                value={estado}
+                onChange={(e) => setEstado(e.value)}
+                options={estados}
+                optionLabel="state"
+                placeholder="Selecciona un estado"
+              />
+              <h5>Diagnostico técnico</h5>
+              <InputTextarea
+                id="diagnostico_tecnico"
+                value={ordenServicio.diagnostico_tecnico}
+                onChange={(e) => onInputChange(e, "diagnostico_tecnico")}
+                placeholder="Diagnostico..."
+                autoResize
+                rows="5"
+                cols="30"
+                />
+            </div>
+            <div className="col-12 mb-2 lg:col-6 lg:mb-0">
               <div className="grid p-fluid">
                 <div className="col-12 mb-2 lg:col-6 lg:mb-0">
                   <h5>Cliente</h5>
@@ -638,6 +811,15 @@ const OrdenServicio = () => {
                     className="p-button-success"
                   />
                 </div>
+                {cliente && (
+                  <DataView
+                    value={[cliente]}
+                    layout="grid"
+                    rows={4}
+                    emptyMessage=" "
+                    itemTemplate={itemCliente}
+                  />
+                )}
               </div>
               <OverlayPanel
                 ref={op2}
@@ -658,7 +840,7 @@ const OrdenServicio = () => {
                 >
                   <Column
                     field="dni"
-                    header="Cedula"
+                    header="Cédula"
                     sortable
                     headerStyle={{ minWidth: "10rem" }}
                   />
@@ -676,16 +858,16 @@ const OrdenServicio = () => {
                   />
                 </DataTable>
               </OverlayPanel>
-              <h5>Estado</h5>
-              <Dropdown
-                value={ordenServicio.estado_orden_servicio}
-                onChange={(e) => setEstado(e.value)}
-                options={estados}
-                optionLabel="state"
-                placeholder="Selecciona un estado"
-              />
-            </div>
-            <div className="col-12 mb-2 lg:col-6 lg:mb-0">
+              <h5>Diagnostico en recepción</h5>
+              <InputTextarea
+                id="diagnostico_recepcion"
+                value={ordenServicio.diagnostico_recepcion}
+                onChange={(e) => onInputChange(e, "diagnostico_recepcion")}
+                placeholder="Observaciones..."
+                autoResize
+                rows="3"
+                cols="30"
+                />
               <h5>Observaciones</h5>
               <InputTextarea
                 id="observaciones"
@@ -696,6 +878,7 @@ const OrdenServicio = () => {
                 rows="3"
                 cols="30"
               />
+
             </div>
           </div>
 
@@ -768,137 +951,127 @@ const OrdenServicio = () => {
           onHide={hideDialogOrden}
         >
           <div className="field">
+                
             <div className="grid p-fluid">
               <div className="col-12 md:col-6">
-                <h5>Precio</h5>
-                <div className="grid p-fluid">
-                  {
-                    /*
-                  <div className="col-12 md:col-6">
-                    <div className="p-inputgroup">
-                      <span className="p-float-label">
-                        <InputText placeholder="Sub total sin IVA" />
-                        <span className="p-inputgroup-addon">$</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="col-12 md:col-6">
-                    <div className="p-inputgroup">
-                      <InputText placeholder="Valor IVA" />
-                      <span className="p-inputgroup-addon">%</span>
-                    </div>
-                  </div>
-
-                  <div className="col-12 md:col-6">
-                    <div className="p-inputgroup">
-                      <InputText placeholder="Sub total sin IVA" />
-                      <span className="p-inputgroup-addon">$</span>
-                    </div>
-                  </div>
-                    */
-                  }
-                  <div className="col-12 md:col-6">
-                    <div className="p-inputgroup">
-                      <InputText
-                        id="descuento"
-                        value={detalleOrdenServicio.descuento}
-                        onChange={(e) => onInputChange(e, "descuento")}
-                        autoFocus
-                        placeholder="Descuento"
-                        className={classNames({
-                          "p-invalid": submitted &&
-                            !detalleOrdenServicio.descuento,
-                        })}
-                      />
-                      <span className="p-inputgroup-addon">%</span>
-                    </div>
-                  </div>
-
-                  {
-                    /*
-                  <div className="col-12 md:col-6">
-                    <div className="p-inputgroup">
-                      <InputText placeholder="Total" disabled />
-                      <span className="p-inputgroup-addon">$</span>
-                    </div>
-                  </div>
-                    */
-                  }
-                </div>
-              </div>
-
-              <div className="col-12 md:col-6">
-                {
-                  /*
-                <h5>Diagnostico del tecnico</h5>
-                <InputTextarea
-                  placeholder="Observaciones..."
-                  autoResize
-                  rows="3"
-                  cols="30"
-                />
-                <h5>Descripcion del diagnostico tecnico</h5>
-                <InputTextarea
-                  placeholder="Descripcion..."
-                  autoResize
-                  rows="3"
-                  cols="30"
-                />
-                  */
-                }
-
                 <h5>Producto</h5>
+              </div>
+              <div className="col-12 md:col-6">
                 <Button
                   type="button"
                   label="Seleccionar el producto"
                   onClick={toggleDataTableProducto}
                   className="p-button-success"
                 />
-                <OverlayPanel
-                  ref={op3}
-                  appendTo={document.body}
-                  showCloseIcon
-                  id="overlay_panel"
-                  style={{ width: "450px" }}
-                >
-                  <DataTable
-                    value={productos}
-                    selection={selectedProducto}
-                    onSelectionChange={(e) => setSelectedProducto(e.value)}
-                    selectionMode="single"
-                    responsiveLayout="scroll"
-                    paginator
-                    rows={5}
-                    onRowSelect={onProductoSelect}
-                  >
-                    <Column
-                      field="codigo"
-                      header="Código"
-                      headerStyle={{ width: "14%", minWidth: "7rem" }}
-                    >
-                    </Column>
-                    <Column
-                      field="nombre"
-                      header="Nombre"
-                      headerStyle={{ width: "34%", minWidth: "10rem" }}
-                    >
-                    </Column>
-                    <Column
-                      field="precioVenta"
-                      header="Precio de venta"
-                      headerStyle={{ width: "14%", minWidth: "10rem" }}
-                    >
-                    </Column>
-                    <Column
-                      field="stock"
-                      header="Stock"
-                      headerStyle={{ width: "6%", minWidth: "5rem" }}
-                    >
-                    </Column>
-                  </DataTable>
-                </OverlayPanel>
               </div>
+            </div>
+            {producto && (
+              <DataView
+                value={[producto]}
+                layout="grid"
+                rows={9}
+                itemTemplate={itemTemplateProducto}
+              >
+              </DataView>
+            )}
+            <OverlayPanel
+              ref={op3}
+              appendTo={document.body}
+              showCloseIcon
+              id="overlay_panel"
+              style={{ width: "450px" }}
+            >
+              <DataTable
+                value={productos}
+                selection={selectedProducto}
+                onSelectionChange={(e) => setSelectedProducto(e.value)}
+                selectionMode="single"
+                responsiveLayout="scroll"
+                paginator
+                rows={5}
+                onRowSelect={onProductoSelect}
+              >
+                <Column
+                  field="codigo"
+                  header="Código"
+                  headerStyle={{ width: "14%", minWidth: "7rem" }}
+                >
+                </Column>
+                <Column
+                  field="nombre"
+                  header="Nombre"
+                  headerStyle={{ width: "34%", minWidth: "10rem" }}
+                >
+                </Column>
+                <Column
+                  field="precioVenta"
+                  header="Precio de venta"
+                  headerStyle={{ width: "14%", minWidth: "10rem" }}
+                >
+                </Column>
+                <Column
+                  field="stock"
+                  header="Stock"
+                  headerStyle={{ width: "6%", minWidth: "5rem" }}
+                >
+                </Column>
+              </DataTable>
+            </OverlayPanel>
+          </div>
+          <div className="field">
+                              <div className="col-12 md:col-6">
+            <div className="p-inputgroup">
+              <span className="p-inputgroup-addon">
+                <label htmlFor="cantidad">
+                  <strong>Cantidad:&nbsp;</strong>
+                </label>
+              </span>
+                <span className="p-float-label">
+                  <InputText
+                    id="cantidad"
+                    value={detalleOrdenServicio.cantidad}
+                    onChange={(e) => onInputChangeDetalle(e, "cantidad")}
+                    required
+                    pattern="[0-9]+"
+                    className={classNames({
+                      "p-invalid": submitted && !detalleOrdenServicio.cantidad,
+                    })}
+                    />
+                  {submitted && !detalleOrdenServicio.cantidad && (
+                    <small className="p-invalid">
+                      El precio de venta es necesario.
+                    </small>
+                  )}
+                </span>
+            </div>
+            </div>
+          </div>       
+          <div className="field">
+            <div className="col-12 md:col-6">
+            <div className="p-inputgroup">
+              <span className="p-inputgroup-addon">
+                <label htmlFor="Descuento"><strong>Descuento:&nbsp;</strong></label>
+              </span>
+              <span className="p-float-label">
+                <InputText
+                  id="descuento"
+                  value={detalleOrdenServicio.descuento}
+                  onChange={(e) => onInputChangeDetalle(e, "descuento")}
+                  required
+                  mode="decimal"
+                  className={classNames({
+                    "p-invalid": submitted && !detalleOrdenServicio.descuento,
+                  })}
+                  />
+                <span className="p-inputgroup-addon">%</span>
+                {submitted && !detalleOrdenServicio.descuento && (
+                  <small className="p-invalid">
+                    <br />
+                    El descuento es necesario.
+                  </small>
+                )}
+              </span>
+            </div>
             </div>
           </div>
         </Dialog>

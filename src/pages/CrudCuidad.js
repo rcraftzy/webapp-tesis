@@ -39,6 +39,7 @@ const CrudCuidad = () => {
 
   const openNew = () => {
     setProduct(emptyProduct);
+    setDropdownItem(null)
     setSubmitted(false);
     setProductDialog(true);
   };
@@ -79,8 +80,6 @@ const CrudCuidad = () => {
       } else {
         productService.postCiudad({id: product.id, nombre: product.nombre, provincia_id: dropdownItem.id});
 
-        // _product.id = createId();
-        // _product.image = "product-placeholder.svg";
         _products.push({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
         toast.current.show({
           severity: "success",
@@ -98,6 +97,7 @@ const CrudCuidad = () => {
 
   const editProduct = (product) => {
     setProduct({ ...product });
+    setDropdownItem(product.provincia)
     setProductDialog(true);
   };
 
@@ -250,9 +250,6 @@ const deleteProductDialogFooter = (
     />
   </>
 );
-  const onProvincia = (e) => {
-     setDropdownItem(e.value)
-  }
 const deleteProductsDialogFooter = (
   <>
     <Button
@@ -347,11 +344,11 @@ return (
           </div>
 
           <div className="field">
-            <label htmlFor="state">Provincia</label>
+            <label htmlFor="nombre">Provincia</label>
             <Dropdown
-              id="state"
-              value={product.provincia}
-              onChange={onProvincia}
+              id="nombre"
+              value={dropdownItem}
+              onChange={(e) => setDropdownItem(e.value)}
               options={dropdownItems}
               optionLabel="nombre"
               placeholder="Selecciona una provincia"

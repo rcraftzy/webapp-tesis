@@ -24,6 +24,11 @@ export const getEstados = () => {
     res,
   ) => res.data);
 };
+export const getEstado = (id) => {
+  return axios.get("http://localhost:9090/api/v1.0/estadoordenservicio/"+id).then((
+    res,
+  ) => res.data);
+};
 export const putEstado = (id, estado) => {
   return axios.put(
     "http://localhost:9090/api/v1.0/estadoordenservicio/" + id,

@@ -24,11 +24,6 @@ export class OrdenServicioService {
       console.log(error);
     }
   }
-  async getDetallesO(id) {
-    return await axios.get("http://localhost:9090/api/v1.0/detalleordenServicio/"+id).then((
-      res,
-    ) => res.data);
-  }
   postDetalle(detalle) {
     return axios.post("http://localhost:9090/api/v1.0/detalleordenServicio", detalle);
   }
