@@ -13,6 +13,7 @@ import "./App.scss";
 // import { ProtectedRoute } from "./components/ProtectedRoute";
 // import { AuthProvider } from "./context/AuthContext";
 import { DataProvider } from "./context/DataContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const Login = lazy(() => import("./components/Login"));
 const Register = lazy(() => import("./components/Register"));
@@ -29,12 +30,10 @@ const Cliente = lazy(() => import("./pages/Cliente"));
 const Tecnico = lazy(() => import("./pages/Tecnico"));
 
 const App = () => {
-
   return (
     <DataProvider>
       <Suspense fallback={<div />}>
         <Routes>
-          <Route path="/login" element={<Login />} />
           <Route
             path="/"
             element={
@@ -43,6 +42,7 @@ const App = () => {
               </Layout>
             }
           />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route
             path="/dashboard"
@@ -60,54 +60,56 @@ const App = () => {
               </Layout>
             }
           />
-          <Route
-            path="/cuidad"
-            element={
-              <Layout>
-                <CrudCuidad />
-              </Layout>
-            }
-          />
-          <Route
-            path="/orden-de-servicio"
-            element={
-              <Layout>
-                <OrdenServicio />
-              </Layout>
-            }
-          />
-          <Route
-            path="/tecnico"
-            element={
-              <Layout>
-                <Tecnico />
-              </Layout>
-            }
-          />
-          <Route
-            path="/cliente"
-            element={
-              <Layout>
-                <Cliente />
-              </Layout>
-            }
-          />
-          <Route
-            path="/producto"
-            element={
-              <Layout>
-                <Producto />
-              </Layout>
-            }
-          />
-          <Route
-            path="/empresa"
-            element={
-              <Layout>
-                <Empresa />
-              </Layout>
-            }
-          />
+          <Route element={<ProtectedRoute />}>
+            <Route
+              path="/cuidad"
+              element={
+                <Layout>
+                  <CrudCuidad />
+                </Layout>
+              }
+            />
+            <Route
+              path="/orden-de-servicio"
+              element={
+                <Layout>
+                  <OrdenServicio />
+                </Layout>
+              }
+            />
+            <Route
+              path="/tecnico"
+              element={
+                <Layout>
+                  <Tecnico />
+                </Layout>
+              }
+            />
+            <Route
+              path="/cliente"
+              element={
+                <Layout>
+                  <Cliente />
+                </Layout>
+              }
+            />
+            <Route
+              path="/producto"
+              element={
+                <Layout>
+                  <Producto />
+                </Layout>
+              }
+            />
+            <Route
+              path="/empresa"
+              element={
+                <Layout>
+                  <Empresa />
+                </Layout>
+              }
+            />
+          </Route>
         </Routes>
       </Suspense>
     </DataProvider>
