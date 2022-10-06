@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { DataContext } from "../context/DataContext";
 
 const Login = () => {
-  const {setUser} = useContext(DataContext)
+  const {user, setUser} = useContext(DataContext)
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +23,8 @@ const Login = () => {
     });
 
     const content = await response.json();
+
+    window.localStorage.setItem('loggedAppUser', JSON.stringify(user))
 
     setRedirect(true);
     setUser(content.name);
