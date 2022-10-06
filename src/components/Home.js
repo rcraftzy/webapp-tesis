@@ -1,20 +1,15 @@
 import React from "react";
-// import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { DataContext } from "../context/DataContext";
+import { useAuth } from "../context/DataContext";
+// import { DataContext } from "../context/DataContext";
+import { Navigate } from "react-router-dom";
 
 const Home = () => {
 
-  const navigate = useNavigate();
-  const {user} = React.useContext(DataContext);
+  const {user} =  useAuth();
 
-  if (user.name) {
-  } else {
-    navigate("/login");
-  }
   return (
     <div>
-      {user.name ? "Hi " + user.name : "You are not logged in"}
+      {user.name ? "Hi " + user.name : <Navigate to="/login" />}
     </div>
   );
 };
