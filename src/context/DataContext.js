@@ -1,6 +1,13 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState, useContext } from "react";
+import { getUser, getUserEmpresa } from "../service/AuthService"
 
 export const DataContext = createContext();
+
+export const useAuth = () => {
+  const context = useContext(DataContext);
+  if (!context) throw new Error("There is no Auth provider");
+  return context;
+};
 
 export function DataProvider({ children }) {
   let empty = {
@@ -33,41 +40,16 @@ export function DataProvider({ children }) {
   const [user, setUser] = useState("");
 
   useEffect(() => {
-    (
-      async () => {
-        try {
-          const response = await fetch("http://localhost:9090/api/user", {
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-          });
-
-          const content = await response.json();
-
-          setUser(content);
-          getUserEmpresa(content.id);
-        } catch (e) {
-          console.log(e);
-        }
-      }
-    )();
-  }, []);
-
-  const getUserEmpresa = async (id) => {
-    try {
-      const response = await fetch(
-        "http://localhost:9090/api/v1.0/empresaUser/" + id,
-        {
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        },
-      );
-      const content = await response.json();
-
-      setData(content);
-    } catch (error) {
-      console.log(error);
+    getUser().then(setUser) 
+    getUserEmpresa(user.id).then(setData);
+  }, [user]);
+  useEffect(() => {
+    const loggedUserJSON = localStorage.getItem('loggedAppUser')
+    if(loggedUserJSON){
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
     }
-  };
+  }, [])
 
   return (
     <DataContext.Provider value={{ data, setUser, user }}>
