@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 
 import { CSSTransition } from "react-transition-group";
 import { AppTopbar } from "../AppTopbar";
@@ -10,15 +10,14 @@ import { AppConfig } from "../AppConfig";
 import PrimeReact from "primereact/api";
 import { Tooltip } from "primereact/tooltip";
 
-const Layout = ({ children }) => {
+const Layout = () => {
   const [layoutMode, setLayoutMode] = useState("static");
   const [layoutColorMode, setLayoutColorMode] = useState("light");
   const [inputStyle, setInputStyle] = useState("outlined");
   const [ripple, setRipple] = useState(true);
   const [staticMenuInactive, setStaticMenuInactive] = useState(false);
   const [overlayMenuActive, setOverlayMenuActive] = useState(false);
-  const [mobileMenuActive, setMobileMenuActive] = useState(false);
-  const [mobileTopbarMenuActive, setMobileTopbarMenuActive] = useState(false);
+  const [mobileMenuActive, setMobileMenuActive] = useState(false); const [mobileTopbarMenuActive, setMobileTopbarMenuActive] = useState(false);
   const copyTooltipRef = useRef();
   const location = useLocation();
 
@@ -124,12 +123,12 @@ const Layout = ({ children }) => {
         {
           label: "Configuración y miembros",
           icon: "pi pi-fw pi-cog",
-          to: "/empresa",
+          to: "empresa",
         },
         {
           label: "Dashboard",
           icon: "pi pi-fw pi-home",
-          to: "/dashboard",
+          to: "dashboard",
         },
       ],
     },
@@ -140,17 +139,17 @@ const Layout = ({ children }) => {
         {
           label: "Provincia",
           icon: "pi pi-fw pi-map",
-          to: "/provincia",
+          to: "provincia",
         },
-        { label: "Ciudad", icon: "pi pi-fw pi-map-marker", to: "/cuidad" },
+        { label: "Ciudad", icon: "pi pi-fw pi-map-marker", to: "ciudad" },
         {
           label: "Orden de servicio",
           icon: "pi pi-fw pi-list",
-          to: "/orden-de-servicio",
+          to: "orden-de-servicio",
         },
-        { label: "Técnico", icon: "pi pi-fw pi-user-edit", to: "/tecnico" },
-        { label: "Cliente", icon: "pi pi-fw pi-id-card", to: "/cliente" },
-        { label: "Producto", icon: "pi pi-fw pi-table", to: "/producto" },
+        { label: "Técnico", icon: "pi pi-fw pi-user-edit", to: "tecnico" },
+        { label: "Cliente", icon: "pi pi-fw pi-id-card", to: "cliente" },
+        { label: "Producto", icon: "pi pi-fw pi-table", to: "producto" },
       ],
     },
   ];
@@ -217,7 +216,9 @@ const Layout = ({ children }) => {
       </div>
 
       <div className="layout-main-container">
-        <div className="layout-main">{children}</div>
+        <div className="layout-main">
+          <Outlet />
+        </div>
         <AppFooter layoutColorMode={layoutColorMode} />
       </div>
       <AppConfig

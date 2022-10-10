@@ -1,10 +1,9 @@
-import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useContext, useEffect } from "react";
+import { Navigate, Link } from "react-router-dom";
 import { DataContext } from "../context/DataContext";
 
 const Login = () => {
-  const {user, setUser} = useContext(DataContext)
-  const navigate = useNavigate();
+  const {user} = useContext(DataContext)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirect, setRedirect] = useState(false);
@@ -12,7 +11,7 @@ const Login = () => {
   const submit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:9090/api/login", {
+    await fetch("http://localhost:9090/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -21,17 +20,15 @@ const Login = () => {
         password,
       }),
     });
-
-    const content = await response.json();
-
     window.localStorage.setItem('loggedAppUser', JSON.stringify(user))
-
     setRedirect(true);
-    setUser(content.name);
-  };
+  }
+  useEffect(() => {
+    window.localStorage.setItem('loggedAppUser', JSON.stringify(user))
+  }, [user]);
 
   if (redirect) {
-    navigate("/");
+    return <Navigate to="/empresa" />
   }
 
   return (
@@ -48,7 +45,7 @@ const Login = () => {
           <div className="div-logo">
             <img className="logo-login" src="images/Logo.jpeg" alt="logo del instituto"/>
           </div>
-          <h1 className="title">Servicio Tecnico</h1>
+          <h1 className="title">Servicio Técnico</h1>
           <br />
           <input
             type="email"

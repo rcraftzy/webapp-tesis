@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState, useContext } from "react";
-import { getUser, getUserEmpresa } from "../service/AuthService"
+import { getUserEmpresa, getUser } from "../service/AuthService"
+import { emptyEmpresaUser } from "../service/emptyServie"
 
 export const DataContext = createContext();
 
@@ -10,48 +11,20 @@ export const useAuth = () => {
 };
 
 export function DataProvider({ children }) {
-  let empty = {
-    id: null,
-    user: {
-      id: null,
-      name: "",
-      email: "",
-    },
-    empresa: {
-      id: null,
-      ruc: "",
-      nombre: "",
-      direccion: "",
-      ciudad: {
-        id: null,
-        nombre: "",
-        provincia: {
-          id: null,
-          nombre: "",
-        },
-      },
-      telefono: "",
-      email: "",
-      porcentajeIVA: null,
-    },
-  };
 
-  const [data, setData] = useState(empty);
-  const [user, setUser] = useState("");
+  const [data, setData] = useState(emptyEmpresaUser);
+  const [user, setUser] = useState(() => JSON.parse(window.localStorage.getItem('loggedAppUser') || "{}"));
 
   useEffect(() => {
-    getUser().then(setUser) 
+    getUser().then(setUser)
+  }, []);
+
+  useEffect(() => {
     getUserEmpresa(user.id).then(setData);
-  }, [user]);
-  useEffect(() => {
-    const loggedUserJSON = localStorage.getItem('loggedAppUser')
-    if(loggedUserJSON){
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-    }
-  }, [])
+  }, [user.id])
 
-  return (
+
+    return (
     <DataContext.Provider value={{ data, setUser, user }}>
       {children}
     </DataContext.Provider>

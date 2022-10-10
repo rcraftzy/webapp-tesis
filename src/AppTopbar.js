@@ -1,16 +1,21 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import classNames from 'classnames'
+import classNames from "classnames";
+import { DataContext } from "./context/DataContext";
 
 export const AppTopbar = (props) => {
 
+  const {setUser} = useContext(DataContext)
+
   const logout = async () => {
-        await fetch('http://localhost:9090/api/logout', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            credentials: 'include',
-        });
-    }
+    await fetch("http://localhost:9090/api/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    setUser("");
+    window.localStorage.removeItem("loggedAppUser");
+  };
 
   return (
     <div className="layout-topbar">
@@ -44,7 +49,11 @@ export const AppTopbar = (props) => {
         })}
       >
         <li>
-          <a className="p-link layout-topbar-button" href="/login" onClick={logout}>
+          <a
+            className="p-link layout-topbar-button"
+            href="/login"
+            onClick={logout}
+          >
             <i className="pi pi-sign-out" />
             <span>Salir</span>
           </a>

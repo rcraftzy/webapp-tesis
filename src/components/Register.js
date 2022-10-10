@@ -54,7 +54,7 @@ const Register = () => {
 
       <div className="column-right">
         <span className="contain-txt-register">
-          <Link to="/login">Volver al inicio de sesion</Link>
+          <Link to="/login">Volver al inicio de sesión</Link>
         </span>
         <form onSubmit={submit}>
 
@@ -62,7 +62,7 @@ const Register = () => {
             <img className="logo-login" src="images/Logo.jpeg" alt="logo del instituto"/>
           </div>
              
-          <h1 className="title">Registro de Servicio Tecnico</h1>
+          <h1 className="title">Registro de Servicio Técnico</h1>
 
           <input
             className="input-user"
@@ -75,7 +75,7 @@ const Register = () => {
           <input
             type="email"
             className="input-email"
-            placeholder="Ingrese su direccion e-mail"
+            placeholder="Ingrese su dirección e-mail"
             required
             onChange={(e) => setEmail(e.target.value)}
           />

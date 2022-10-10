@@ -10,8 +10,6 @@ import "./assets/demo/Demos.scss";
 import "./assets/layout/layout.scss";
 import "./App.scss";
 
-// import { ProtectedRoute } from "./components/ProtectedRoute";
-// import { AuthProvider } from "./context/AuthContext";
 import { DataProvider } from "./context/DataContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -52,63 +50,37 @@ const App = () => {
               </Layout>
             }
           />
-          <Route
-            path="/provincia"
-            element={
-              <Layout>
-                <Crud />
-              </Layout>
-            }
-          />
-          <Route element={<ProtectedRoute />}>
-            <Route
-              path="/cuidad"
-              element={
-                <Layout>
-                  <CrudCuidad />
-                </Layout>
-              }
-            />
-            <Route
-              path="/orden-de-servicio"
-              element={
-                <Layout>
-                  <OrdenServicio />
-                </Layout>
-              }
-            />
-            <Route
-              path="/tecnico"
-              element={
-                <Layout>
-                  <Tecnico />
-                </Layout>
-              }
-            />
-            <Route
-              path="/cliente"
-              element={
-                <Layout>
-                  <Cliente />
-                </Layout>
-              }
-            />
-            <Route
-              path="/producto"
-              element={
-                <Layout>
-                  <Producto />
-                </Layout>
-              }
-            />
-            <Route
-              path="/empresa"
-              element={
-                <Layout>
-                  <Empresa />
-                </Layout>
-              }
-            />
+          <Route path="*" element={<Layout/>}>
+            <Route element={<ProtectedRoute />}>
+              <Route
+                path="ciudad"
+                element={<CrudCuidad />}
+                />
+              <Route
+                path="provincia"
+                element={<Crud />}
+                />
+              <Route
+                path="orden-de-servicio"
+                element={<OrdenServicio />}
+                />
+              <Route
+                path="tecnico"
+                element={<Tecnico />}
+                />
+              <Route
+                path="cliente"
+                element={<Cliente />}
+                />
+              <Route
+                path="producto"
+                element={<Producto />}
+                />
+              <Route
+                path="empresa"
+                element={<Empresa />}
+                />
+            </Route>
           </Route>
         </Routes>
       </Suspense>
