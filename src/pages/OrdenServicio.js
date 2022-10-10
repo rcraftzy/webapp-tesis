@@ -14,150 +14,33 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { OrdenServicioService } from "../service/OrdenServicioService";
+import { OrdenServicioService, getDetalles } from "../service/OrdenServicioService";
 import { ClienteService } from "../service/ClienteService";
 import { getTecnicos } from "../service/TecnicoService";
 import { EstadoService } from "../service/EstadoService";
 import { ProductoService } from "../service/ProductoService";
+import {
+  emptyCliente,
+  emptyDetalleOrdenServicio,
+  emptyOrdenServicio,
+  emptyProducto,
+  emptyTecnico,
+} from "../service/emptyServie";
 
 const OrdenServicio = () => {
-  let emptyProducto = {
-    id: null,
-    codigo: "",
-    nombre: "",
-    precioVenta: "",
-    stockMin: "",
-    stockMax: "",
-    stock: "",
-    controlaStock: false,
-    aplicaIva: false,
-    empresa: {
-      id: null,
-    },
-  };
-  let emptyTecnico = {
-    id: null,
-    cedula: "",
-    nombre: "",
-    apellido: "",
-    email: "",
-    telefono: "",
-    direccion: "",
-    ciudad: {
-      id: null,
-      nombre: "",
-      provincia: {
-        id: null,
-        nombre: "",
-      },
-    },
-    empresa: {
-      id: null,
-      ruc: "",
-      nombre: "",
-      direccion: "",
-      ciudad: {
-        id: null,
-        nombre: "",
-        provincia: {
-          id: null,
-          nombre: "",
-        },
-      },
-      telefono: "",
-      email: "",
-      porcentajeIVA: "",
-    },
-  };
-  let emptyDetalleOrdenServicio = {
-    id: null,
-    orden_servicio: {},
-    cantidad: "",
-    producto: {},
-    descripcion: "",
-    precio_unitario: null,
-    descuento: null,
-    porcentaje_IVA: null,
-    valor_IVA: null,
-    total: null,
-    estado_orden_servcio: {},
-  };
-  let emptyCliente = {
-    id: null,
-    nombres: "",
-    apellidos: "",
-    dni: "",
-    direccion: "",
-    telefono: "",
-    celular: "",
-    email: "",
-    estado: null,
-  };
-  let emptyOrdenServicio = {
-    id: null,
-    numero_orden: "",
-    empresa: {
-      id: null,
-      ruc: "",
-      nombre: "",
-      direccion: "",
-      ciudad: "",
-      telefono: "",
-      email: "",
-      porcentajeIVA: null,
-    },
-    cliente: {
-      id: null,
-      nombres: "",
-      apellidos: "",
-      dni: "",
-      direccion: "",
-      telefono: "",
-      celular: "",
-      email: "",
-      estado: "",
-    },
-    fecha_emision: "",
-    estado_orden_servicio: {
-      id: null,
-      state: "",
-      empresa: {
-        id: null,
-        ruc: "",
-        nombre: "",
-        direccion: "",
-        ciudad: "",
-        telefono: "",
-        email: "",
-        porcentajeIVA: null,
-      },
-    },
-    sub_total_con_IVA: "",
-    sub_total_sin_IVA: "",
-    tecnico: {
-      id: null,
-      cedula: null,
-      nombre: "",
-      apellido: "",
-      email: "",
-      telefono: "",
-      direccion: "",
-    },
-    descuento: "",
-    valor_IVA: "",
-    total: "",
-    observaciones: "",
-    diagnostico_recepcion: "",
-    diagnostico_tecnico: "",
-  };
+  const [ordenesServicio, setOrdenesServicio] = useState([]);
+  const [ordenId, setOrdenId] = useState({id: null});
+  const [ordenServicio, setOrdenServicio] = useState(emptyOrdenServicio);
 
-  const [ordenesServicio, setOrdenesServicio] = useState(null);
-  const [detalleOrdenesServicio, setDetalleOrdenesServicio] = useState(null);
+  const [realationOrden, setRelationOrden] = useState([])
+  const [globalFilter, setGlobalFilter] = useState(null);
+
+  const [detalleOrdenesServicio, setDetalleOrdenesServicio] = useState([]);
+  const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(
+    emptyDetalleOrdenServicio,
+  );
 
   const [productDialog, setProductDialog] = useState(false);
-
-  const [ordenServicio, setOrdenServicio] = useState(emptyOrdenServicio);
-  const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(emptyDetalleOrdenServicio);
 
   const [submitted, setSubmitted] = useState(false);
   const toast = useRef(null);
@@ -183,12 +66,11 @@ const OrdenServicio = () => {
   useEffect(() => {
     const ordenServicioService = new OrdenServicioService();
     ordenServicioService.getOrdenes().then((data) => setOrdenesServicio(data));
-    ordenServicioService.getDetalles().then((data) =>
-      setDetalleOrdenesServicio(data)
-    );
 
     const clienteService = new ClienteService();
     clienteService.getClientes().then((data) => setClientes(data));
+
+    getDetalles().then((data) => setDetalleOrdenesServicio(data))
 
     getTecnicos().then((data) => setTecnicos(data));
 
@@ -220,9 +102,8 @@ const OrdenServicio = () => {
     });
   };
   const onProductoSelect = (event) => {
-    op1.current.hide();
+    op3.current.hide();
     setProducto(event.data);
-    console.log(producto);
     toast.current.show({
       severity: "info",
       summary: "Producto seleccionado",
@@ -244,9 +125,11 @@ const OrdenServicio = () => {
 
   const openNew = () => {
     setOrdenServicio(emptyOrdenServicio);
-    setDetalleOrdenServicio(emptyDetalleOrdenServicio);
+    setRelationOrden([])
     setTecnico(emptyTecnico);
     setCliente(emptyCliente);
+    setSelectedTecnico(null)
+    setSelectedProduct(null)
     setEstado(null);
     setProducto(emptyProducto);
     setSubmitted(false);
@@ -255,7 +138,9 @@ const OrdenServicio = () => {
 
   const openNewDetalle = () => {
     setDetalleOrdenServicio(emptyDetalleOrdenServicio);
+    setSelectedProducto(null)
     setProducto(emptyProducto);
+    setOrdenId(ordenServicio.id)
     setEstado(ordenServicio.estado_orden_servicio);
     setSubmitted(false);
     setOrdenDialog(true);
@@ -274,11 +159,9 @@ const OrdenServicio = () => {
     const orden = new OrdenServicioService();
 
     if (ordenServicio.observaciones.trim()) {
-      console.log("first if");
       let _ordenesServicio = [...ordenesServicio];
       let _ordenServicio = { ...ordenServicio };
       if (ordenServicio.id) {
-        console.log("second if");
         const index = findIndexById(ordenServicio.id);
 
         _ordenesServicio[index] = _ordenServicio;
@@ -287,7 +170,7 @@ const OrdenServicio = () => {
           numOrden: "1",
           empresa_id: 1,
           cliente_id: cliente.id,
-          fecha_emision: "2022-09-28",
+          fecha_emision: "2022-10-11",
           estado_orden_servicio_id: estado.id,
           sub_total_con_IVA: 0.0,
           sub_total_sin_IVA: 0.0,
@@ -296,8 +179,8 @@ const OrdenServicio = () => {
           valor_IVA: 12.0,
           total: 0.0,
           observaciones: ordenServicio.observaciones,
-          diagnostico_recepcion: ordenServicio.diagnostico_recepcion, 
-          diagnostico_tecnico: ordenServicio.diagnostico_tecnico
+          diagnostico_recepcion: ordenServicio.diagnostico_recepcion,
+          diagnostico_tecnico: ordenServicio.diagnostico_tecnico,
         });
         toast.current.show({
           severity: "success",
@@ -319,8 +202,8 @@ const OrdenServicio = () => {
           valor_IVA: 12.0,
           total: 0.0,
           observaciones: ordenServicio.observaciones,
-          diagnostico_recepcion: ordenServicio.diagnostico_recepcion, 
-          diagnostico_tecnico: ordenServicio.diagnostico_tecnico
+          diagnostico_recepcion: ordenServicio.diagnostico_recepcion,
+          diagnostico_tecnico: ordenServicio.diagnostico_tecnico,
         });
 
         toast.current.show({
@@ -339,13 +222,11 @@ const OrdenServicio = () => {
   const saveDetalle = () => {
     setSubmitted(true);
     const detalle = new OrdenServicioService();
-
     if (detalleOrdenServicio.cantidad.trim()) {
       let _ordenesServicio = [...detalleOrdenesServicio];
       let _ordenServicio = { ...detalleOrdenServicio };
       if (detalleOrdenServicio.id) {
         const index = findIndexById(detalleOrdenServicio.id);
-
         _ordenesServicio[index] = _ordenServicio;
 
         toast.current.show({
@@ -356,7 +237,7 @@ const OrdenServicio = () => {
         });
       } else {
         detalle.postDetalle({
-          orden_servicio_id: 1,
+          orden_servicio_id: ordenId,
           cantidad: parseFloat(detalleOrdenServicio.cantidad),
           producto_id: producto.id,
           descripcion: producto.nombre,
@@ -367,10 +248,15 @@ const OrdenServicio = () => {
           total: 20,
           diagnostico_recepcion: "",
           diagnostico_tecnico: "",
-          estado_orden_servicio_id: estado.id
-        });
-
-        _ordenesServicio.push(_ordenServicio);
+          estado_orden_servicio_id: estado.id,
+        }).then((res) => {
+            if(res === 401){
+            }else{
+              _ordenesServicio.push(res.data);
+              setDetalleOrdenesServicio(_ordenesServicio);
+              setRelationOrden(_ordenesServicio)
+            }
+          });
         toast.current.show({
           severity: "success",
           summary: "Exito",
@@ -378,8 +264,6 @@ const OrdenServicio = () => {
           life: 3000,
         });
       }
-
-      setDetalleOrdenesServicio(_ordenesServicio);
       setOrdenDialog(false);
       setDetalleOrdenServicio(emptyDetalleOrdenServicio);
     }
@@ -396,6 +280,18 @@ const OrdenServicio = () => {
 
     return index;
   };
+  const header = (
+    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+      <span className="block mt-2 md:mt-0 p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText
+          type="search"
+          onInput={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Buscar..."
+        />
+      </span>
+    </div>
+  );
 
   const leftToolbarTemplate = () => {
     return (
@@ -456,13 +352,27 @@ const OrdenServicio = () => {
 
   const editOrden = (orden) => {
     setOrdenServicio({ ...orden });
+    const newValues = detalleOrdenesServicio.filter(detalle => detalle.orden_servicio.id === orden.id);
+    setRelationOrden(newValues)
     setTecnico(orden.tecnico);
+    setSelectedTecnico(orden.tecnico)
     setCliente(orden.cliente);
+    setSelectedProduct(orden.cliente)
     setEstado(orden.estado_orden_servicio);
     setProductDialog(true);
   };
 
   const itemTemplate = (data) => {
+    const newValues = detalleOrdenesServicio.filter(detalle => detalle.orden_servicio.id === data.id);
+    const total = newValues.reduce((accumulator, current) => accumulator + current.total, 0);
+    const descuento = newValues.reduce((accumulator, current) => accumulator + current.descuento, 0);
+    const valor_IVA = newValues.reduce((accumulator, current) => accumulator + current.valor_IVA, 0);
+
+     const sub_total_sin_IVA = newValues.filter(({valor_IVA}) => valor_IVA === 0)
+    .reduce((accumulator, current) => accumulator + current.total, 0)
+    
+     const sub_total_con_IVA = newValues.filter(({valor_IVA}) => valor_IVA > 0)
+    .reduce((accumulator, current) => accumulator + current.total, 0)
     return (
       <div className="col-12">
         <div className="card border-1 surface-border">
@@ -500,8 +410,9 @@ const OrdenServicio = () => {
           <Accordion>
             <AccordionTab header="Detalles">
               <DataTable
-                value={detalleOrdenesServicio}
+                value={newValues}
                 responsiveLayout="scroll"
+                emptyMessage="No se encontraron registros."
                 rows={15}
               >
                 <Column
@@ -544,6 +455,7 @@ const OrdenServicio = () => {
                 <Column
                   field="total"
                   header="Total"
+                  body={totalBodyTemplate}
                   headerStyle={{ minWidth: "8rem" }}
                 />
               </DataTable>
@@ -564,21 +476,21 @@ const OrdenServicio = () => {
                   <div className="card border-1 surface-border">
                     <div>
                       <strong>Descuento:</strong>
-                      <span>&nbsp;{data.descuento}</span>
+                      <span>&nbsp;{descuento}</span>
                       <div>
                         <strong>Total IVA:</strong>
-                        <span>&nbsp;{data.valor_IVA}</span>
+                        <span>&nbsp;{valor_IVA}</span>
                       </div>
                     </div>
                     <strong>Sub total sin IVA:</strong>
-                    <span>&nbsp;{data.sub_total_sin_IVA}</span>
+                    <span>&nbsp;{sub_total_sin_IVA}</span>
                     <div>
                       <strong>Sub total con IVA:</strong>
-                      <span>&nbsp;{data.sub_total_con_IVA}</span>
+                      <span>&nbsp;{sub_total_con_IVA}</span>
                     </div>
                     <hr />
                     <strong>Total:</strong>
-                    <span>&nbsp;{data.total}</span>
+                    <span>&nbsp;{total}$</span>
                   </div>
                 </div>
               </div>
@@ -594,6 +506,19 @@ const OrdenServicio = () => {
       {rowData.producto.codigo}
     </>
   );
+  const totalBodyTemplate = (rowData) => {
+    const totalWithCantidad = rowData.precio_unitario*rowData.cantidad
+    const initialDiscount = (rowData.descuento/100)*totalWithCantidad
+    const discount = rowData.precio_unitario-initialDiscount
+    const iva = rowData.porcentaje_IVA
+    const total = discount
+    return(
+    <>
+      <span className="p-column-title">Código</span>
+      {total}
+    </>
+    )
+  }
 
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || "";
@@ -758,6 +683,8 @@ const OrdenServicio = () => {
                   paginator
                   rows={5}
                   onRowSelect={onTecnicoSelect}
+                  globalFilter={globalFilter}
+                  header={header}
                 >
                   <Column
                     field="cedula"
@@ -796,7 +723,7 @@ const OrdenServicio = () => {
                 autoResize
                 rows="5"
                 cols="30"
-                />
+              />
             </div>
             <div className="col-12 mb-2 lg:col-6 lg:mb-0">
               <div className="grid p-fluid">
@@ -837,6 +764,8 @@ const OrdenServicio = () => {
                   paginator
                   rows={5}
                   onRowSelect={onProductSelect}
+                  header={header}
+                  globalFilter={globalFilter}
                 >
                   <Column
                     field="dni"
@@ -867,7 +796,7 @@ const OrdenServicio = () => {
                 autoResize
                 rows="3"
                 cols="30"
-                />
+              />
               <h5>Observaciones</h5>
               <InputTextarea
                 id="observaciones"
@@ -878,7 +807,6 @@ const OrdenServicio = () => {
                 rows="3"
                 cols="30"
               />
-
             </div>
           </div>
 
@@ -890,11 +818,11 @@ const OrdenServicio = () => {
             className="p-button-success mr-2"
             onClick={openNewDetalle}
             style={{ marginRight: ".25em" }}
-          />
+            />
           <DataTable
-            value={detalleOrdenesServicio}
+            value={realationOrden}
             responsiveLayout="scroll"
-            paginator
+            emptyMessage="No se encontraron registros."
             rows={5}
           >
             <Column
@@ -902,43 +830,44 @@ const OrdenServicio = () => {
               header="Código"
               body={codigoBodyTemplate}
               headerStyle={{ minWidth: "7rem" }}
-            />
+              />
             <Column
               field="descripcion"
               header="Descripción"
               headerStyle={{ minWidth: "14rem" }}
-            />
+              />
             <Column
               field="cantidad"
               header="Cantidad"
               headerStyle={{ minWidth: "7rem" }}
-            />
+              />
 
             <Column
               field="precio_unitario"
               header="Precio Unitario"
               headerStyle={{ minWidth: "8rem" }}
-            />
+              />
             <Column
               field="descuento"
               header="Descuento"
               headerStyle={{ minWidth: "7rem" }}
-            />
+              />
             <Column
               field="porcentaje_IVA"
               header="% IVA"
               headerStyle={{ minWidth: "8rem" }}
-            />
+              />
             <Column
               field="valor_IVA"
               header="Valor IVA"
               headerStyle={{ minWidth: "7rem" }}
-            />
+              />
             <Column
               field="total"
               header="Total"
+              body={totalBodyTemplate}
               headerStyle={{ minWidth: "8rem" }}
-            />
+              />
           </DataTable>
         </Dialog>
         <Dialog
@@ -951,7 +880,6 @@ const OrdenServicio = () => {
           onHide={hideDialogOrden}
         >
           <div className="field">
-                
             <div className="grid p-fluid">
               <div className="col-12 md:col-6">
                 <h5>Producto</h5>
@@ -987,6 +915,8 @@ const OrdenServicio = () => {
                 onSelectionChange={(e) => setSelectedProducto(e.value)}
                 selectionMode="single"
                 responsiveLayout="scroll"
+                globalFilter={globalFilter}
+                header={header}
                 paginator
                 rows={5}
                 onRowSelect={onProductoSelect}
@@ -1019,13 +949,13 @@ const OrdenServicio = () => {
             </OverlayPanel>
           </div>
           <div className="field">
-                              <div className="col-12 md:col-6">
-            <div className="p-inputgroup">
-              <span className="p-inputgroup-addon">
-                <label htmlFor="cantidad">
-                  <strong>Cantidad:&nbsp;</strong>
-                </label>
-              </span>
+            <div className="col-12 md:col-6">
+              <div className="p-inputgroup">
+                <span className="p-inputgroup-addon">
+                  <label htmlFor="cantidad">
+                    <strong>Cantidad:&nbsp;</strong>
+                  </label>
+                </span>
                 <span className="p-float-label">
                   <InputText
                     id="cantidad"
@@ -1036,42 +966,44 @@ const OrdenServicio = () => {
                     className={classNames({
                       "p-invalid": submitted && !detalleOrdenServicio.cantidad,
                     })}
-                    />
+                  />
                   {submitted && !detalleOrdenServicio.cantidad && (
                     <small className="p-invalid">
                       El precio de venta es necesario.
                     </small>
                   )}
                 </span>
+              </div>
             </div>
-            </div>
-          </div>       
+          </div>
           <div className="field">
             <div className="col-12 md:col-6">
-            <div className="p-inputgroup">
-              <span className="p-inputgroup-addon">
-                <label htmlFor="Descuento"><strong>Descuento:&nbsp;</strong></label>
-              </span>
-              <span className="p-float-label">
-                <InputText
-                  id="descuento"
-                  value={detalleOrdenServicio.descuento}
-                  onChange={(e) => onInputChangeDetalle(e, "descuento")}
-                  required
-                  mode="decimal"
-                  className={classNames({
-                    "p-invalid": submitted && !detalleOrdenServicio.descuento,
-                  })}
+              <div className="p-inputgroup">
+                <span className="p-inputgroup-addon">
+                  <label htmlFor="Descuento">
+                    <strong>Descuento:&nbsp;</strong>
+                  </label>
+                </span>
+                <span className="p-float-label">
+                  <InputText
+                    id="descuento"
+                    value={detalleOrdenServicio.descuento}
+                    onChange={(e) => onInputChangeDetalle(e, "descuento")}
+                    required
+                    mode="decimal"
+                    className={classNames({
+                      "p-invalid": submitted && !detalleOrdenServicio.descuento,
+                    })}
                   />
-                <span className="p-inputgroup-addon">%</span>
-                {submitted && !detalleOrdenServicio.descuento && (
-                  <small className="p-invalid">
-                    <br />
-                    El descuento es necesario.
-                  </small>
-                )}
-              </span>
-            </div>
+                  <span className="p-inputgroup-addon">%</span>
+                  {submitted && !detalleOrdenServicio.descuento && (
+                    <small className="p-invalid">
+                      <br />
+                      El descuento es necesario.
+                    </small>
+                  )}
+                </span>
+              </div>
             </div>
           </div>
         </Dialog>

@@ -58,11 +58,12 @@ const Crud = () => {
       let _products = [...products];
       let _product = { ...product };
       if (product.id) {
-        const index = findIndexById(product.id);
-
-        _products[index] = _product;
 
         productService.putProvincia(product.id, _product);
+        const index = findIndexById(product.id);
+        _products[index] = _product;
+
+        setProducts(_products);
 
         toast.current.show({
           severity: "success",
@@ -71,11 +72,13 @@ const Crud = () => {
           life: 3000,
         });
       } else {
-        productService.postProvincia(_product);
-
-        /*  _product.id = createId();
-                _product.image = "product-placeholder.svg"; */
-        _products.push(_product);
+        productService.postProvincia(_product).then((res) => {
+          if(res === 401) {
+          }else{
+            _products.push(res.data)
+            setProducts(_products);
+          }
+        });
         toast.current.show({
           severity: "success",
           summary: "Petición exitosa",
@@ -83,8 +86,6 @@ const Crud = () => {
           life: 3000,
         });
       }
-
-      setProducts(_products);
       setProductDialog(false);
       setProduct(emptyProduct);
     }
@@ -276,7 +277,7 @@ const Crud = () => {
           >
             <Column
               field="name"
-              header="Nombre de provincia"
+              header="Nombre de la provincia"
               body={nameBodyTemplate}
               headerStyle={{ width: "86%", minWidth: "10rem" }}
             >

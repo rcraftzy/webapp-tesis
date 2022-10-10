@@ -59,8 +59,8 @@ const Tecnico = () => {
   const [dropdownItems, setDropdownItems] = useState(null);
 
   useEffect(() => {
-    API.getTecnicos().then((data) => setTecnicos(data))
-    APICiudad.getCiudades().then((data) => setDropdownItems(data))
+    API.getTecnicos().then((data) => setTecnicos(data));
+    APICiudad.getCiudades().then((data) => setDropdownItems(data));
   }, []);
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || "";
@@ -71,7 +71,7 @@ const Tecnico = () => {
   };
   const openNew = () => {
     setTecnico(emptyTecnico);
-    setDropdownItem(null)
+    setDropdownItem(null);
     setSubmitted(false);
     setTecnicoDialog(true);
   };
@@ -87,11 +87,21 @@ const Tecnico = () => {
       let _products = [...tecnicos];
       let _product = { ...tecnico };
       if (tecnico.id) {
+
+        API.putTecnicos(tecnico.id, {
+          cedula: tecnico.cedula,
+          nombre: tecnico.nombre,
+          apellido: tecnico.apellido,
+          email: tecnico.email,
+          telefono: tecnico.telefono,
+          direccion: tecnico.direccion,
+          ciudad_id: dropdownItem.id,
+          empresa_id: 1,
+        });
         const index = findIndexById(tecnico.id);
-
         _products[index] = _product;
+        setTecnicos(_products);
 
-        API.putTecnicos(tecnico.id,{cedula: tecnico.cedula, nombre: tecnico.nombre, apellido: tecnico.apellido, email: tecnico.email, telefono: tecnico.telefono, direccion: tecnico.direccion, ciudad_id: dropdownItem.id, empresa_id: 1});
         toast.current.show({
           severity: "success",
           summary: "Successful",
@@ -99,8 +109,22 @@ const Tecnico = () => {
           life: 3000,
         });
       } else {
-        API.postTecnicos({cedula: tecnico.cedula, nombre: tecnico.nombre, apellido: tecnico.apellido, email: tecnico.email, telefono: tecnico.telefono, direccion: tecnico.direccion, ciudad_id: dropdownItem.id, empresa_id: 1});
-        _products.push(_product);
+        API.postTecnicos({
+          cedula: tecnico.cedula,
+          nombre: tecnico.nombre,
+          apellido: tecnico.apellido,
+          email: tecnico.email,
+          telefono: tecnico.telefono,
+          direccion: tecnico.direccion,
+          ciudad_id: dropdownItem.id,
+          empresa_id: 1,
+        }).then((res) => {
+            if (res === 401) {
+            }else{
+              _products.push(res.data)
+              setTecnicos(_products);
+            }
+          });
         toast.current.show({
           severity: "success",
           summary: "Successful",
@@ -108,8 +132,6 @@ const Tecnico = () => {
           life: 3000,
         });
       }
-
-      setTecnicos(_products);
       setTecnicoDialog(false);
       setTecnico(emptyTecnico);
     }
@@ -125,11 +147,10 @@ const Tecnico = () => {
 
     return index;
   };
-  
+
   const editProduct = (product) => {
     setTecnico({ ...product });
-    setDropdownItem(product.ciudad)
-    console.log(product.ciudad)
+    setDropdownItem(product.ciudad);
     setTecnicoDialog(true);
   };
   const actionBodyTemplate = (rowData) => {
@@ -146,12 +167,12 @@ const Tecnico = () => {
 
   const leftToolbarTemplate = () => {
     return (
-          <Button
-            label="Nuevo"
-            icon="pi pi-plus"
-            className="p-button-success mr-2"
-            onClick={openNew}
-          />
+      <Button
+        label="Nuevo"
+        icon="pi pi-plus"
+        className="p-button-success mr-2"
+        onClick={openNew}
+      />
     );
   };
   const productDialogFooter = (
@@ -170,19 +191,19 @@ const Tecnico = () => {
       />
     </>
   );
-   const header = (
-  <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-    <h5 className="m-0">Tecnicos</h5>
-    <span className="block mt-2 md:mt-0 p-input-icon-left">
-      <i className="pi pi-search" />
-      <InputText
-        type="search"
-        onInput={(e) => setGlobalFilter(e.target.value)}
-        placeholder="Buscar..."
-      />
-    </span>
-  </div>
-);
+  const header = (
+    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+      <h5 className="m-0">Tecnicos</h5>
+      <span className="block mt-2 md:mt-0 p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText
+          type="search"
+          onInput={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Buscar..."
+        />
+      </span>
+    </div>
+  );
 
   return (
     <div className="grid crud-demo">
@@ -194,15 +215,16 @@ const Tecnico = () => {
             value={tecnicos}
             selectionMode="single"
             responsiveLayout="scroll"
-            emptyMessage="No se encontro los registros."
+            emptyMessage="Registros no encontrados."
             paginator
-            rows={5}
+            className="datatable-responsive"
+            rows={10}
             globalFilter={globalFilter}
             header={header}
           >
             <Column
               field="cedula"
-              header="Cedula"
+              header="Cédula"
               headerStyle={{ width: "8%", minWidth: "8rem" }}
             />
             <Column
@@ -231,7 +253,6 @@ const Tecnico = () => {
               headerStyle={{ minWidth: "8rem" }}
             />
             <Column body={actionBodyTemplate}></Column>
-
           </DataTable>
 
           <Dialog
@@ -244,20 +265,26 @@ const Tecnico = () => {
             onHide={hideDialog}
           >
             <div className="field">
-              <label htmlFor="cedula">Cedula</label>
+              <label htmlFor="cedula">Cédula</label>
               <InputText
                 id="cedula"
                 value={tecnico.cedula}
                 onChange={(e) => onInputChange(e, "cedula")}
                 required
                 autoFocus
+                maxLength="10"
+                onKeyPress={(event) => {
+                  if (!/[0-9]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !tecnico.cedula,
                 })}
               />
               {submitted && !tecnico.cedula && (
                 <small className="p-invalid">
-                  El numero de cedula del técnico es necesario.
+                  El numero de cédula del técnico es necesario.
                 </small>
               )}
             </div>
@@ -268,6 +295,11 @@ const Tecnico = () => {
                 value={tecnico.nombre}
                 onChange={(e) => onInputChange(e, "nombre")}
                 required
+                onKeyPress={(event) => {
+                  if (!/[A-Za-z]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !tecnico.nombre,
                 })}
@@ -285,6 +317,11 @@ const Tecnico = () => {
                 value={tecnico.apellido}
                 onChange={(e) => onInputChange(e, "apellido")}
                 required
+                onKeyPress={(event) => {
+                  if (!/[A-Za-z]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !tecnico.apellido,
                 })}
@@ -295,14 +332,20 @@ const Tecnico = () => {
                 </small>
               )}
             </div>
-            
+
             <div className="field">
-              <label htmlFor="telefono">Teléfono</label>
+              <label htmlFor="telefono">Celular</label>
               <InputText
                 id="telefono"
                 value={tecnico.telefono}
                 onChange={(e) => onInputChange(e, "telefono")}
                 required
+                maxLength="10"
+                onKeyPress={(event) => {
+                  if (!/[0-9]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !tecnico.telefono,
                 })}
@@ -352,7 +395,7 @@ const Tecnico = () => {
               <Dropdown
                 id="nombre"
                 value={dropdownItem}
-                onChange={e => setDropdownItem(e.value)}
+                onChange={(e) => setDropdownItem(e.value)}
                 options={dropdownItems}
                 optionLabel="nombre"
                 placeholder="Selecciona una ciudad"

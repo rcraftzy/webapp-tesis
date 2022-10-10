@@ -77,6 +77,7 @@ const Empresa = () => {
   };
   const editEmpresa = (empresa) => {
     setEmpresa({ ...empresa });
+    setDropdownItem(empresa.ciudad)
     setEmpresaDialog(true);
   };
 
@@ -103,14 +104,11 @@ const Empresa = () => {
   };
 
   const saveEmpresa = () => {
-
     setSubmitted(true);
 
     if (empresa.nombre.trim()) {
 
       if (empresa.id) {
-        console.log("hola")
-        console.log(empresa)
         APIEmpresa.putEmpresas(empresa.id, {
           ruc: empresa.ruc,
           nombre: empresa.nombre, 
@@ -120,6 +118,7 @@ const Empresa = () => {
           email: empresa.email,
           porcentajeIVA: parseFloat(empresa.porcentajeIVA),
         });
+        setEmpresas(empresa);
 
         toast.current.show({
           severity: "success",
@@ -135,7 +134,6 @@ const Empresa = () => {
           life: 3000,
         });
       }
-
       setEmpresaDialog(false);
       setEmpresa(emptyEmpresa);
     }
@@ -146,18 +144,16 @@ const Empresa = () => {
     if (estado.state.trim()) {
       let _products = [...estados];
       let _product = { ...estado };
-      console.log(_products)
-      console.log(_product)
       if (estado.id) {
-        const index = findIndexById(estado.id);
-
-        _products[index] = _product;
-
         API.putEstado(estado.id, {
           state: estado.state,
           color: colorValue,
           empresa_id: empresa.id,
         });
+        const index = findIndexById(estado.id);
+        _products[index] = _product;
+        setEstados(_products);
+
         toast.current.show({
           severity: "success",
           summary: "Petición exitosa",
@@ -169,12 +165,13 @@ const Empresa = () => {
           state: estado.state,
           color: colorValue,
           empresa_id: empresa.id,
-        });
-
-        _products.push({
-          state: estado.state,
-          color: colorValue,
-        });
+        }).then((res) => {
+            if(res === 401){
+            }else{
+              _products.push(res.data)
+              setEstados(_products);
+            }
+          });
 
         toast.current.show({
           severity: "success",
@@ -183,8 +180,6 @@ const Empresa = () => {
           life: 3000,
         });
       }
-
-      setEstados(_products);
       setEstadoDialog(false);
       setEstado(emptyEstado);
     }
@@ -268,7 +263,7 @@ const Empresa = () => {
   };
 
   const deleteProduct = () => {
-    let _products = estados.filter((val) => val.id !== estados.id);
+    let _products = estados.filter((val) => val.id !== estado.id);
     setEstados(_products);
     setDeleteEstadoDialog(false);
     setEstado(emptyEstado);
@@ -512,7 +507,7 @@ const Empresa = () => {
           <label htmlFor="Ciudad">Provincia</label>
           <Dropdown
             id="Ciudad"
-            value={empresa.ciudad}
+            value={dropdownItem}
             onChange={(e) => setDropdownItem(e.value)}
             options={dropdownItems}
             optionLabel="nombre"
@@ -590,7 +585,7 @@ const Empresa = () => {
           />
           {estado && (
             <span>
-              Are you sure you want to delete <b>{estado.state}</b>?
+              ¿Esta seguro de eliminar <b>{estado.state}</b>?
             </span>
           )}
         </div>

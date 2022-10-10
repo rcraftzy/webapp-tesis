@@ -20,7 +20,7 @@ const Cliente = () => {
     telefono: "",
     celular: "",
     email: "",
-    estado: null, 
+    estado: null,
   };
 
   const [clientes, setClientes] = useState(null);
@@ -62,16 +62,22 @@ const Cliente = () => {
     const clientserv = new ClienteService();
 
     if (cliente.nombres.trim()) {
-
       let _products = [...clientes];
       let _product = { ...cliente };
       if (cliente.id) {
+        clientserv.putClientes(cliente.id, {
+          nombres: cliente.nombres,
+          apellidos: cliente.apellidos,
+          dni: cliente.dni,
+          direccion: cliente.direccion,
+          telefono: cliente.telefono,
+          celular: cliente.celular,
+          email: cliente.email,
+          estado: true,
+        });
         const index = findIndexById(cliente.id);
-
         _products[index] = _product;
-
-        clientserv.putClientes(cliente.id,{nombres: cliente.nombres, apellidos: cliente.apellidos, dni: cliente.dni, direccion: cliente.direccion, telefono: cliente.telefono, celular: cliente.celular, email: cliente.email, estado: true});
-
+        setClientes(_products);
         toast.current.show({
           severity: "success",
           summary: "Successful",
@@ -79,8 +85,22 @@ const Cliente = () => {
           life: 3000,
         });
       } else {
-        clientserv.postClientes({nombres: cliente.nombres, apellidos: cliente.apellidos, dni: cliente.dni, direccion: cliente.direccion, telefono: cliente.telefono, celular: cliente.celular, email: cliente.email, estado: true});
-        _products.push({nombres: cliente.nombres, apellidos: cliente.apellidos, dni: cliente.dni, direccion: cliente.direccion, telefono: cliente.telefono, celular: cliente.celular, email: cliente.email, estado: true});
+        clientserv.postClientes({
+          nombres: cliente.nombres,
+          apellidos: cliente.apellidos,
+          dni: cliente.dni,
+          direccion: cliente.direccion,
+          telefono: cliente.telefono,
+          celular: cliente.celular,
+          email: cliente.email,
+          estado: true,
+        }).then((res) => {
+            if(res === 401){
+            }else{
+              _products.push(res.data)
+              setClientes(_products);
+            }
+          });
         toast.current.show({
           severity: "success",
           summary: "Successful",
@@ -88,8 +108,6 @@ const Cliente = () => {
           life: 3000,
         });
       }
-
-      setClientes(_products);
       setClienteDialog(false);
       setCliente(emptyCliente);
     }
@@ -156,7 +174,7 @@ const Cliente = () => {
           icon="pi pi-plus"
           className="p-button-success mr-2"
           onClick={openNew}
-          />
+        />
       </div>
     );
   };
@@ -274,7 +292,7 @@ const Cliente = () => {
       />
     </>
   );
-  
+
   const deleteProductsDialogFooter = (
     <>
       <Button
@@ -317,21 +335,21 @@ const Cliente = () => {
           >
             <Column
               field="dni"
-              header="Cedula"
+              header="Cédula"
               body={dniBodyTemplate}
               headerStyle={{ width: "14%", minWidth: "10rem" }}
             >
             </Column>
             <Column
               field="name"
-              header="Nombre"
+              header="Nombres"
               body={nameBodyTemplate}
               headerStyle={{ width: "14%", minWidth: "10rem" }}
             >
             </Column>
             <Column
               field="surname"
-              header="Apellido"
+              header="Apellidos"
               body={surnameBodyTemplate}
               headerStyle={{ width: "14%", minWidth: "10rem" }}
             >
@@ -377,13 +395,41 @@ const Cliente = () => {
             onHide={hideDialog}
           >
             <div className="field">
+              <label htmlFor="dni">Cédula</label>
+              <InputText
+                id="dni"
+                value={cliente.dni}
+                onChange={(e) => onInputChange(e, "dni")}
+                required
+                autoFocus
+                maxLength="10"
+                onKeyPress={(event) => {
+                  if (!/[0-9]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
+                className={classNames({
+                  "p-invalid": submitted && !cliente.dni,
+                })}
+              />
+              {submitted && !cliente.dni && (
+                <small className="p-invalid">
+                  El número de cedula del cliente es necesario.
+                </small>
+              )}
+            </div>
+            <div className="field">
               <label htmlFor="name">Nombres</label>
               <InputText
                 id="nombres"
                 value={cliente.nombres}
                 onChange={(e) => onInputChange(e, "nombres")}
-                autoFocus
                 required
+                onKeyPress={(event) => {
+                  if (!/[A-Za-z]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !cliente.nombres,
                 })}
@@ -401,6 +447,11 @@ const Cliente = () => {
                 value={cliente.apellidos}
                 onChange={(e) => onInputChange(e, "apellidos")}
                 required
+                onKeyPress={(event) => {
+                  if (!/[A-Za-z]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !cliente.apellidos,
                 })}
@@ -408,23 +459,6 @@ const Cliente = () => {
               {submitted && !cliente.apellidos && (
                 <small className="p-invalid">
                   El apellido del cliente es necesario.
-                </small>
-              )}
-            </div>
-            <div className="field">
-              <label htmlFor="dni">Cedula</label>
-              <InputText
-                id="dni"
-                value={cliente.dni}
-                onChange={(e) => onInputChange(e, "dni")}
-                required
-                className={classNames({
-                  "p-invalid": submitted && !cliente.dni,
-                })}
-              />
-              {submitted && !cliente.dni && (
-                <small className="p-invalid">
-                  El numero de cedula del cliente es necesario.
                 </small>
               )}
             </div>
@@ -452,13 +486,19 @@ const Cliente = () => {
                 value={cliente.telefono}
                 onChange={(e) => onInputChange(e, "telefono")}
                 required
+                maxLength="9"
+                onKeyPress={(event) => {
+                  if (!/[0-9]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !cliente.telefono,
                 })}
               />
               {submitted && !cliente.telefono && (
                 <small className="p-invalid">
-                  El numero de teléfono del cliente es necesario.
+                  El número de teléfono del cliente es necesario.
                 </small>
               )}
             </div>
@@ -469,13 +509,19 @@ const Cliente = () => {
                 value={cliente.celular}
                 onChange={(e) => onInputChange(e, "celular")}
                 required
+                maxLength="10"
+                onKeyPress={(event) => {
+                  if (!/[0-9]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
                 className={classNames({
                   "p-invalid": submitted && !cliente.celular,
                 })}
               />
               {submitted && !cliente.celular && (
                 <small className="p-invalid">
-                  El numero de celular del cliente es necesario.
+                  El número de celular del cliente es necesario.
                 </small>
               )}
             </div>
@@ -540,4 +586,4 @@ const Cliente = () => {
     </div>
   );
 };
-export default React.memo(Cliente)
+export default React.memo(Cliente);

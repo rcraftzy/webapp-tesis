@@ -78,31 +78,30 @@ const Producto = () => {
 
     const productoService = new ProductoService();
 
-    console.log(producto)
     if (producto.nombre.trim()) {
       let _products = [...productos];
       let _product = { ...producto };
       if (producto.id) {
-        const index = findIndexById(producto.id);
-
-        _products[index] = _product;
-        console.log(_product)
-
         productoService.putProducto(producto.id, {
           codigo: producto.codigo,
           nombre: producto.nombre,
           precioVenta: parseFloat(producto.precioVenta),
           stockMin: parseFloat(producto.stockMin),
           stockMax: parseFloat(producto.stockMax),
-          stock: parseFloat(producto.stock),
+          stock: 0,
           controlaStock: false,
           aplicaIva: aplicaIva,
           empresa_id: 1,
-        });
+        })
+        const index = findIndexById(producto.id);
+        _products[index] = _product;
+
+        setProductos(_products);
+
         toast.current.show({
           severity: "success",
           summary: "Exito",
-          detail: "Técnico actualizado",
+          detail: "Producto actualizado",
           life: 3000,
         });
       } else {
@@ -116,27 +115,20 @@ const Producto = () => {
           controlaStock: false,
           aplicaIva: aplicaIva,
           empresa_id: 1,
-        });
-        _products.push({
-          codigo: producto.codigo,
-          nombre: producto.nombre,
-          precioVenta: parseFloat(producto.precioVenta),
-          stockMin: parseFloat(producto.stockMin),
-          stockMax: parseFloat(producto.stockMax),
-          stock: parseFloat(producto.stock),
-          controlaStock: false,
-          aplicaIva: aplicaIva,
-          empresa_id: 1,
-        });
+        }).then((res) => {
+            if(res === 401) {
+            }else{
+              _products.push(res.data)
+              setProductos(_products);
+            }
+          })
         toast.current.show({
           severity: "success",
           summary: "Exito",
-          detail: "Técnico creado",
+          detail: "Producto creado",
           life: 3000,
         });
       }
-
-      setProductos(_products);
       setProductoDialog(false);
       setProducto(emptyTecnico);
     }
@@ -280,35 +272,30 @@ const Producto = () => {
       />
     </>
   );
-  const ivaBodyTemplate = (rowData) => {
-    if (rowData.aplicaIva) {
-      return (
-        <strong
-          style={{
-            background: "#c8e6c9",
-            padding: "5px",
-            borderRadius: "6px",
-            color: "#25602e",
-          }}
-        >
-          Si aplica
-        </strong>
-      );
-    } else {
-      return (
-        <strong
-          style={{
-            background: "#ffcdd2",
-            padding: "5px",
-            borderRadius: "6px",
-            color: "#d33937",
-          }}
-        >
-          No aplica
-        </strong>
-      );
-    }
-  };
+  const ivaBodyTemplate = (rowData) => (
+    rowData.aplicaIva ?
+      <strong
+        style={{
+          background: "#c8e6c9",
+          padding: "5px",
+          borderRadius: "6px",
+          color: "#25602e",
+        }}
+      >
+        Si aplica
+      </strong>
+      :
+      <strong
+        style={{
+          background: "#ffcdd2",
+          padding: "5px",
+          borderRadius: "6px",
+          color: "#d33937",
+        }}
+      >
+        No aplica
+      </strong> 
+  );
 
   return (
     <div className="grid crud-demo">
@@ -342,19 +329,13 @@ const Producto = () => {
             <Column
               field="nombre"
               header="Nombre"
-              headerStyle={{ width: "34%", minWidth: "10rem" }}
+              headerStyle={{ width: "44%", minWidth: "10rem" }}
             >
             </Column>
             <Column
               field="precioVenta"
               header="Precio de venta"
               headerStyle={{ width: "14%", minWidth: "10rem" }}
-            >
-            </Column>
-            <Column
-              field="stock"
-              header="Stock"
-              headerStyle={{ width: "6%", minWidth: "5rem" }}
             >
             </Column>
             <Column
@@ -384,6 +365,7 @@ const Producto = () => {
                 onChange={(e) => onInputChange(e, "codigo")}
                 required
                 autoFocus
+                maxlength="12"
                 className={classNames({
                   "p-invalid": submitted && !producto.codigo,
                 })}
@@ -412,48 +394,31 @@ const Producto = () => {
               )}
             </div>
             <div className="grid p-fluid">
+              
               <div className="col-12 mb-2 lg:col-4 lg:mb-0">
                 <div className="field">
                   <label htmlFor="precioVenta">Precio de venta</label>
                   <div className="p-inputgroup">
                     <span className="p-float-label">
-                      <InputText
+                        <InputText
                         id="precioVenta"
-                        value={producto.precioVenta}
-                        onChange={(e) => onInputChange(e, "precioVenta")}
-                        required
+                        placeholder="0.00"
+                        value={producto.precioVenta} 
+                        onChange={(e) => onInputChange(e, 'precioVenta')} 
+                        onKeyPress={(event) => {
+                          if (!/[0-9,.]/.test(event.key)) {
+                            event.preventDefault();
+                          }
+                        }}
                         className={classNames({
                           "p-invalid": submitted && !producto.precioVenta,
                         })}
-                      />
+                />
                       <span className="p-inputgroup-addon">$</span>
                       {submitted && !producto.precioVenta && (
                         <small className="p-invalid">
                           <br />
                           El precio de venta es necesario.
-                        </small>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 mb-2 lg:col-4 lg:mb-0">
-                <div className="field">
-                  <label htmlFor="stock">Stock</label>
-                  <div className="p-inputgroup">
-                    <span className="p-float-label">
-                      <InputText
-                        id="stock"
-                        value={producto.stock}
-                        onChange={(e) => onInputChange(e, "stock")}
-                        required
-                        className={classNames({
-                          "p-invalid": submitted && !producto.stock,
-                        })}
-                      />
-                      {submitted && !producto.stock && (
-                        <small className="p-invalid">
-                          El stock del producto es necesario.
                         </small>
                       )}
                     </span>

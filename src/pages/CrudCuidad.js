@@ -39,7 +39,7 @@ const CrudCuidad = () => {
 
   const openNew = () => {
     setProduct(emptyProduct);
-    setDropdownItem(null)
+    setDropdownItem(null);
     setSubmitted(false);
     setProductDialog(true);
   };
@@ -65,11 +65,16 @@ const CrudCuidad = () => {
       let _products = [...products];
       let _product = { ...product };
       if (product.id) {
+
+        productService.putCiudad(product.id, {
+          id: product.id,
+          nombre: product.nombre,
+          provincia_id: dropdownItem.id,
+        })
+
         const index = findIndexById(product.id);
-
         _products[index] = _product;
-
-        productService.putCiudad(product.id, {id: product.id, nombre: product.nombre, provincia_id: dropdownItem.id});
+        setProducts(_products)
 
         toast.current.show({
           severity: "success",
@@ -78,9 +83,16 @@ const CrudCuidad = () => {
           life: 3000,
         });
       } else {
-        productService.postCiudad({id: product.id, nombre: product.nombre, provincia_id: dropdownItem.id});
-
-        _products.push({id: product.id, nombre: product.nombre, provincia: { id: dropdownItem.id, nombre: dropdownItem.nombre}});
+        productService.postCiudad({
+          nombre: product.nombre,
+          provincia_id: dropdownItem.id,
+        }).then((res) => {
+            if(res === 401) {
+            }else{
+              _products.push(res.data)
+              setProducts(_products);
+            }
+          });
         toast.current.show({
           severity: "success",
           summary: "Exitoso",
@@ -88,8 +100,6 @@ const CrudCuidad = () => {
           life: 3000,
         });
       }
-
-      setProducts(_products);
       setProductDialog(false);
       setProduct(emptyProduct);
     }
@@ -97,7 +107,7 @@ const CrudCuidad = () => {
 
   const editProduct = (product) => {
     setProduct({ ...product });
-    setDropdownItem(product.provincia)
+    setDropdownItem(product.provincia);
     setProductDialog(true);
   };
 
@@ -113,7 +123,7 @@ const CrudCuidad = () => {
     setProduct(emptyProduct);
 
     const ciudad = new ProductService();
-    ciudad.deleteCiudad(product.id)
+    ciudad.deleteCiudad(product.id);
 
     toast.current.show({
       severity: "success",
@@ -129,32 +139,32 @@ const CrudCuidad = () => {
       if (products[i].id === id) {
         index = i;
         break;
+      }
     }
-  }
 
-  return index;
-};
+    return index;
+  };
 
-const deleteSelectedProducts = () => {
-  let _products = products.filter((val) => !selectedProducts.includes(val));
-  setProducts(_products);
-  setDeleteProductsDialog(false);
-  setSelectedProducts(null);
-  toast.current.show({
-    severity: "success",
-    summary: "Successful",
-    detail: "Products Deleted",
-    life: 3000,
-  });
-};
+  const deleteSelectedProducts = () => {
+    let _products = products.filter((val) => !selectedProducts.includes(val));
+    setProducts(_products);
+    setDeleteProductsDialog(false);
+    setSelectedProducts(null);
+    toast.current.show({
+      severity: "success",
+      summary: "Successful",
+      detail: "Products Deleted",
+      life: 3000,
+    });
+  };
 
-const onInputChange = (e, name) => {
-  const val = (e.target && e.target.value) || "";
-  let _product = { ...product };
-  _product[`${name}`] = val;
+  const onInputChange = (e, name) => {
+    const val = (e.target && e.target.value) || "";
+    let _product = { ...product };
+    _product[`${name}`] = val;
 
-  setProduct(_product);
-};
+    setProduct(_product);
+  };
 
   const leftToolbarTemplate = () => {
     return (
@@ -164,244 +174,244 @@ const onInputChange = (e, name) => {
           icon="pi pi-plus"
           className="p-button-success mr-2"
           onClick={openNew}
-          />
+        />
       </div>
     );
   };
 
-const nameBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Ciudad</span>
-      {rowData.nombre}
-    </>
-  );
-};
+  const nameBodyTemplate = (rowData) => {
+    return (
+      <>
+        <span className="p-column-title">Ciudad</span>
+        {rowData.nombre}
+      </>
+    );
+  };
 
-const provinciaBodyTemplate = (rowData) => {
-  return (
-    <>
-      <span className="p-column-title">Provincia</span>
-      {rowData.provincia.nombre}
-    </>
-  );
-};
+  const provinciaBodyTemplate = (rowData) => {
+    return (
+      <>
+        <span className="p-column-title">Provincia</span>
+        {rowData.provincia.nombre}
+      </>
+    );
+  };
 
-const actionBodyTemplate = (rowData) => {
-  return (
-    <div className="actions">
-      <Button
-        icon="pi pi-pencil"
-        className="p-button-rounded p-button-success mr-2"
-        onClick={() => editProduct(rowData)}
-      />
-      <Button
-        icon="pi pi-trash"
-        className="p-button-rounded p-button-warning mt-2"
-        onClick={() => confirmDeleteProduct(rowData)}
-      />
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <div className="actions">
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editProduct(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-warning mt-2"
+          onClick={() => confirmDeleteProduct(rowData)}
+        />
+      </div>
+    );
+  };
+
+  const header = (
+    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+      <h5 className="m-0">Ciudades</h5>
+      <span className="block mt-2 md:mt-0 p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText
+          type="search"
+          onInput={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Buscar..."
+        />
+      </span>
     </div>
   );
-};
 
-const header = (
-  <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-    <h5 className="m-0">Ciudades</h5>
-    <span className="block mt-2 md:mt-0 p-input-icon-left">
-      <i className="pi pi-search" />
-      <InputText
-        type="search"
-        onInput={(e) => setGlobalFilter(e.target.value)}
-        placeholder="Buscar..."
+  const productDialogFooter = (
+    <>
+      <Button
+        label="Cancelar"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDialog}
       />
-    </span>
-  </div>
-);
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={saveProduct}
+      />
+    </>
+  );
+  const deleteProductDialogFooter = (
+    <>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDeleteProductDialog}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={deleteProduct}
+      />
+    </>
+  );
+  const deleteProductsDialogFooter = (
+    <>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={hideDeleteProductsDialog}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={deleteSelectedProducts}
+      />
+    </>
+  );
 
-const productDialogFooter = (
-  <>
-    <Button
-      label="Cancelar"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDialog}
-    />
-    <Button
-      label="Guardar"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={saveProduct}
-    />
-  </>
-);
-const deleteProductDialogFooter = (
-  <>
-    <Button
-      label="No"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDeleteProductDialog}
-    />
-    <Button
-      label="Yes"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={deleteProduct}
-    />
-  </>
-);
-const deleteProductsDialogFooter = (
-  <>
-    <Button
-      label="No"
-      icon="pi pi-times"
-      className="p-button-text"
-      onClick={hideDeleteProductsDialog}
-    />
-    <Button
-      label="Yes"
-      icon="pi pi-check"
-      className="p-button-text"
-      onClick={deleteSelectedProducts}
-    />
-  </>
-);
+  return (
+    <div className="grid crud-demo">
+      <div className="col-12">
+        <div className="card">
+          <Toast ref={toast} />
+          <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
 
-return (
-  <div className="grid crud-demo">
-    <div className="col-12">
-      <div className="card">
-        <Toast ref={toast} />
-        <Toolbar className="mb-4" left={leftToolbarTemplate}></Toolbar>
-
-        <DataTable
-          ref={dt}
-          value={products}
-          selection={selectedProducts}
-          onSelectionChange={(e) => setSelectedProducts(e.value)}
-          dataKey="id"
-          paginator
-          rows={10}
-          rowsPerPageOptions={[5, 10, 25]}
-          className="datatable-responsive"
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          globalFilter={globalFilter}
-          emptyMessage="Ciudades no encontradas."
-          header={header}
-          responsiveLayout="scroll"
-        >
-          <Column
-            field="nombre"
-            header="Nombre Cuidad"
-            body={nameBodyTemplate}
-            headerStyle={{ width: "43%", minWidth: "10rem" }}
+          <DataTable
+            ref={dt}
+            value={products}
+            selection={selectedProducts}
+            onSelectionChange={(e) => setSelectedProducts(e.value)}
+            dataKey="id"
+            paginator
+            rows={10}
+            rowsPerPageOptions={[5, 10, 25]}
+            className="datatable-responsive"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            globalFilter={globalFilter}
+            emptyMessage="Ciudades no encontradas."
+            header={header}
+            responsiveLayout="scroll"
           >
-          </Column>
-          <Column
-            field="nombre"
-            header="Nombre Provincia"
-            body={provinciaBodyTemplate}
-            headerStyle={{ width: "43%", minWidth: "10rem" }}
-          >
-          </Column>
-          <Column body={actionBodyTemplate}></Column>
-        </DataTable>
-
-        <Dialog
-          visible={productDialog}
-          style={{ width: "350px" }}
-          header="Cuidad"
-          modal
-          className="p-fluid"
-          footer={productDialogFooter}
-          onHide={hideDialog}
-        >
-          {product.image && (
-            <img
-              src={`assets/demo/images/product/${product.image}`}
-              alt={product.image}
-              width="150"
-              className="mt-0 mx-auto mb-5 block shadow-2"
-            />
-          )}
-          <div className="field">
-            <label htmlFor="name">Nombre Cuidad</label>
-            <InputText
-              id="nombre"
-              value={product.nombre}
-              onChange={(e) => onInputChange(e, "nombre")}
-              required
-              autoFocus
-              className={classNames({
-                "p-invalid": submitted && !product.nombre,
-              })}
-            />
-            {submitted && !product.nombre && (
-              <small className="p-invalid">
-                El nombre de la ciudad es requerido.
-              </small>
-            )}
-          </div>
-
-          <div className="field">
-            <label htmlFor="nombre">Provincia</label>
-            <Dropdown
-              id="nombre"
-              value={dropdownItem}
-              onChange={(e) => setDropdownItem(e.value)}
-              options={dropdownItems}
-              optionLabel="nombre"
-              placeholder="Selecciona una provincia"
+            <Column
+              field="nombre"
+              header="Nombre Cuidad"
+              body={nameBodyTemplate}
+              headerStyle={{ width: "43%", minWidth: "10rem" }}
             >
-            </Dropdown>
-          </div>
-        </Dialog>
+            </Column>
+            <Column
+              field="nombre"
+              header="Nombre Provincia"
+              body={provinciaBodyTemplate}
+              headerStyle={{ width: "43%", minWidth: "10rem" }}
+            >
+            </Column>
+            <Column body={actionBodyTemplate}></Column>
+          </DataTable>
 
-        <Dialog
-          visible={deleteProductDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductDialogFooter}
-          onHide={hideDeleteProductDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {product && (
-              <span>
-                Are you sure you want to delete <b>{product.name}</b>?
-              </span>
+          <Dialog
+            visible={productDialog}
+            style={{ width: "350px" }}
+            header="Cuidad"
+            modal
+            className="p-fluid"
+            footer={productDialogFooter}
+            onHide={hideDialog}
+          >
+            {product.image && (
+              <img
+                src={`assets/demo/images/product/${product.image}`}
+                alt={product.image}
+                width="150"
+                className="mt-0 mx-auto mb-5 block shadow-2"
+              />
             )}
-          </div>
-        </Dialog>
+            <div className="field">
+              <label htmlFor="name">Nombre Cuidad</label>
+              <InputText
+                id="nombre"
+                value={product.nombre}
+                onChange={(e) => onInputChange(e, "nombre")}
+                required
+                autoFocus
+                className={classNames({
+                  "p-invalid": submitted && !product.nombre,
+                })}
+              />
+              {submitted && !product.nombre && (
+                <small className="p-invalid">
+                  El nombre de la ciudad es requerido.
+                </small>
+              )}
+            </div>
 
-        <Dialog
-          visible={deleteProductsDialog}
-          style={{ width: "450px" }}
-          header="Confirm"
-          modal
-          footer={deleteProductsDialogFooter}
-          onHide={hideDeleteProductsDialog}
-        >
-          <div className="flex align-items-center justify-content-center">
-            <i
-              className="pi pi-exclamation-triangle mr-3"
-              style={{ fontSize: "2rem" }}
-            />
-            {product && (
-              <span>
-                Are you sure you want to delete the selected products?
-              </span>
-            )}
-          </div>
-        </Dialog>
+            <div className="field">
+              <label htmlFor="nombre">Provincia</label>
+              <Dropdown
+                id="nombre"
+                value={dropdownItem}
+                onChange={(e) => setDropdownItem(e.value)}
+                options={dropdownItems}
+                optionLabel="nombre"
+                placeholder="Selecciona una provincia"
+              >
+              </Dropdown>
+            </div>
+          </Dialog>
+
+          <Dialog
+            visible={deleteProductDialog}
+            style={{ width: "450px" }}
+            header="Confirm"
+            modal
+            footer={deleteProductDialogFooter}
+            onHide={hideDeleteProductDialog}
+          >
+            <div className="flex align-items-center justify-content-center">
+              <i
+                className="pi pi-exclamation-triangle mr-3"
+                style={{ fontSize: "2rem" }}
+              />
+              {product && (
+                <span>
+                  Are you sure you want to delete <b>{product.name}</b>?
+                </span>
+              )}
+            </div>
+          </Dialog>
+
+          <Dialog
+            visible={deleteProductsDialog}
+            style={{ width: "450px" }}
+            header="Confirm"
+            modal
+            footer={deleteProductsDialogFooter}
+            onHide={hideDeleteProductsDialog}
+          >
+            <div className="flex align-items-center justify-content-center">
+              <i
+                className="pi pi-exclamation-triangle mr-3"
+                style={{ fontSize: "2rem" }}
+              />
+              {product && (
+                <span>
+                  Are you sure you want to delete the selected products?
+                </span>
+              )}
+            </div>
+          </Dialog>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default React.memo(CrudCuidad);
