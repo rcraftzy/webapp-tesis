@@ -14,7 +14,7 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { OrdenServicioService, getDetalles } from "../service/OrdenServicioService";
+import { OrdenServicioService } from "../service/OrdenServicioService";
 import { ClienteService } from "../service/ClienteService";
 import { getTecnicos } from "../service/TecnicoService";
 import { EstadoService } from "../service/EstadoService";
@@ -28,23 +28,7 @@ import {
 } from "../service/emptyServie";
 
 const OrdenServicio = () => {
-  const [ordenesServicio, setOrdenesServicio] = useState([]);
-  const [ordenId, setOrdenId] = useState({id: null});
-  const [ordenServicio, setOrdenServicio] = useState(emptyOrdenServicio);
-
-  const [realationOrden, setRelationOrden] = useState([])
-  const [globalFilter, setGlobalFilter] = useState(null);
-
-  const [detalleOrdenesServicio, setDetalleOrdenesServicio] = useState([]);
-  const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(
-    emptyDetalleOrdenServicio,
-  );
-
-  const [productDialog, setProductDialog] = useState(false);
-
-  const [submitted, setSubmitted] = useState(false);
-  const toast = useRef(null);
-
+  
   const [clientes, setClientes] = useState(null);
   const [cliente, setCliente] = useState(null);
   const [tecnicos, setTecnicos] = useState(null);
@@ -53,14 +37,29 @@ const OrdenServicio = () => {
   const [estado, setEstado] = useState(null);
   const [productos, setProductos] = useState(null);
   const [producto, setProducto] = useState(null);
+  const [ordenesServicio, setOrdenesServicio] = useState([]);
+  const [ordenServicio, setOrdenServicio] = useState(emptyOrdenServicio);
+  const [detalleOrdenesServicio, setDetalleOrdenesServicio] = useState([]);
+  const [detalleOrdenServicio, setDetalleOrdenServicio] = useState(
+    emptyDetalleOrdenServicio,
+  );
+  const [ordenId, setOrdenId] = useState({id: null});
+  const [realationOrden, setRelationOrden] = useState([])
+
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  const [ordenDialog, setOrdenDialog] = useState(false);
-
   const [selectedTecnico, setSelectedTecnico] = useState(null);
   const [selectedProducto, setSelectedProducto] = useState(null);
-  const op2 = useRef(null);
+
+  const [globalFilter, setGlobalFilter] = useState(null);
+
+  const [productDialog, setProductDialog] = useState(false);
+  const [ordenDialog, setOrdenDialog] = useState(false);
+
+  const [submitted, setSubmitted] = useState(false);
+
+  const toast = useRef(null);
   const op1 = useRef(null);
+  const op2 = useRef(null);
   const op3 = useRef(null);
 
   useEffect(() => {
@@ -69,8 +68,6 @@ const OrdenServicio = () => {
 
     const clienteService = new ClienteService();
     clienteService.getClientes().then((data) => setClientes(data));
-
-    getDetalles().then((data) => setDetalleOrdenesServicio(data))
 
     getTecnicos().then((data) => setTecnicos(data));
 
