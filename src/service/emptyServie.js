@@ -1,3 +1,28 @@
+export let emptyEmpresaUser = {
+    id: null,
+    user: {
+      id: null,
+      name: "",
+      email: "",
+    },
+    empresa: {
+      id: null,
+      ruc: "",
+      nombre: "",
+      direccion: "",
+      ciudad: {
+        id: null,
+        nombre: "",
+        provincia: {
+          id: null,
+          nombre: "",
+        },
+      },
+      telefono: "",
+      email: "",
+      porcentajeIVA: null,
+    },
+}
 export let emptyProducto = {
   id: null,
   codigo: "",
