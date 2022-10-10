@@ -17,7 +17,7 @@ export class OrdenServicioService {
   // Detalle orden servicio
   getDetalles() {
     try {
-      return axios.get("http://localhost:9090/api/v1.0/detalleordenServicio").then((
+      return axios.get("http://localhost:9090/api/v1.0/detalleordenservicio").then((
         res,
       ) => res.data);
     } catch (error) {
