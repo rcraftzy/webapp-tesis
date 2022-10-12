@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import classNames from "classnames";
 
 import { Accordion, AccordionTab } from "primereact/accordion";
@@ -14,7 +14,7 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { OrdenServicioService } from "../service/OrdenServicioService";
+import { OrdenServicioService, getDetalles } from "../service/OrdenServicioService";
 import { ClienteService } from "../service/ClienteService";
 import { getTecnicos } from "../service/TecnicoService";
 import { EstadoService } from "../service/EstadoService";
@@ -26,8 +26,11 @@ import {
   emptyProducto,
   emptyTecnico,
 } from "../service/emptyServie";
+import { DataContext } from "../context/DataContext";
 
 const OrdenServicio = () => {
+
+  const {data} = useContext(DataContext)
   
   const [clientes, setClientes] = useState(null);
   const [cliente, setCliente] = useState(null);
@@ -70,6 +73,7 @@ const OrdenServicio = () => {
     clienteService.getClientes().then((data) => setClientes(data));
 
     getTecnicos().then((data) => setTecnicos(data));
+    getDetalles().then((data) => setDetalleOrdenesServicio(data))
 
     const estadoService = new EstadoService();
     estadoService.getEstados().then((data) => setEstados(data));
@@ -223,35 +227,54 @@ const OrdenServicio = () => {
       let _ordenesServicio = [...detalleOrdenesServicio];
       let _ordenServicio = { ...detalleOrdenServicio };
       if (detalleOrdenServicio.id) {
+        const iva = data.empresa.porcentajeIVA/100
+        const ivaProduct = producto.precioVenta*iva
+        const totalWithCantidadIVA = ivaProduct*parseFloat(detalleOrdenServicio.cantidad)
+        const totalWithCantidad = producto.precioVenta*parseFloat(detalleOrdenServicio.cantidad)
+        const initialDiscount = (parseFloat(detalleOrdenServicio.descuento)/100)*totalWithCantidad
+        const total = (totalWithCantidad+totalWithCantidadIVA)
+        const discount = total-initialDiscount
+        const formatTotal = discount.toFixed(2)
+
+        const valorIVA = totalWithCantidadIVA.toFixed(2)
+
         const index = findIndexById(detalleOrdenServicio.id);
         _ordenesServicio[index] = _ordenServicio;
 
         toast.current.show({
           severity: "success",
-          summary: "Successful",
-          detail: "Product Updated",
+          summary: "Exito",
+          detail: "Detalle de la orden actualizado",
           life: 3000,
         });
       } else {
+        const iva = data.empresa.porcentajeIVA/100
+        const ivaProduct = producto.precioVenta*iva
+        const totalWithCantidadIVA = ivaProduct*parseFloat(detalleOrdenServicio.cantidad)
+        const totalWithCantidad = producto.precioVenta*parseFloat(detalleOrdenServicio.cantidad)
+        const initialDiscount = (parseFloat(detalleOrdenServicio.descuento)/100)*totalWithCantidad
+        const total = (totalWithCantidad+totalWithCantidadIVA)
+        const discount = total-initialDiscount
+        const formatTotal = discount.toFixed(2)
+
+        const valorIVA = totalWithCantidadIVA.toFixed(2)
+
         detalle.postDetalle({
           orden_servicio_id: ordenId,
           cantidad: parseFloat(detalleOrdenServicio.cantidad),
           producto_id: producto.id,
           descripcion: producto.nombre,
           precio_unitario: producto.precioVenta,
-          descuento: 12,
-          porcentaje_IVA: 12,
-          valor_IVA: 1.2,
-          total: 20,
-          diagnostico_recepcion: "",
-          diagnostico_tecnico: "",
+          descuento: parseFloat(detalleOrdenServicio.descuento),
+          porcentaje_IVA: data.empresa.porcentajeIVA,
+          valor_IVA: parseFloat(valorIVA),
+          total: parseFloat(formatTotal),
           estado_orden_servicio_id: estado.id,
         }).then((res) => {
             if(res === 401){
             }else{
               _ordenesServicio.push(res.data);
               setDetalleOrdenesServicio(_ordenesServicio);
-              setRelationOrden(_ordenesServicio)
             }
           });
         toast.current.show({
@@ -432,21 +455,25 @@ const OrdenServicio = () => {
                 <Column
                   field="precio_unitario"
                   header="Precio Unitario"
+                  body={precioBodyTemplate}
                   headerStyle={{ minWidth: "8rem" }}
                 />
                 <Column
                   field="descuento"
                   header="Descuento"
+                  body={descuentoBodyTemplate}
                   headerStyle={{ minWidth: "7rem" }}
                 />
                 <Column
                   field="porcentaje_IVA"
                   header="% IVA"
+                  body={porcentajeIVAbodyTemplate}
                   headerStyle={{ minWidth: "8rem" }}
                 />
                 <Column
                   field="valor_IVA"
                   header="Valor IVA"
+                  body={ivaBodyTemplate}
                   headerStyle={{ minWidth: "7rem" }}
                 />
                 <Column
@@ -504,16 +531,39 @@ const OrdenServicio = () => {
     </>
   );
   const totalBodyTemplate = (rowData) => {
-    const totalWithCantidad = rowData.precio_unitario*rowData.cantidad
-    const initialDiscount = (rowData.descuento/100)*totalWithCantidad
-    const discount = rowData.precio_unitario-initialDiscount
-    const iva = rowData.porcentaje_IVA
-    const total = discount
     return(
     <>
       <span className="p-column-title">Código</span>
-      {total}
+      ${rowData.total}
     </>
+    )
+  }
+  const precioBodyTemplate = (rowData) => (
+    <>
+      <span className="p-column-title">Precio unitario</span>
+      ${rowData.precio_unitario}
+      </>
+  )
+  const descuentoBodyTemplate = (rowData) => (
+    <>
+      <span className="p-column-title">Porcentaje de descuento</span>
+      {rowData.porcentaje_IVA}%
+      </>
+  )
+  const porcentajeIVAbodyTemplate = (rowData) => {
+    return(
+      <>
+        <span className="p-column-title">Porcentaje del IVA</span>
+        {rowData.porcentaje_IVA}%
+        </>
+    )
+  }
+  const ivaBodyTemplate = (rowData) => {
+    return (
+      <>
+        <span className="p-column-title">Valor del IVA</span>
+        ${rowData.valor_IVA}
+        </>
     )
   }
 
@@ -545,7 +595,7 @@ const OrdenServicio = () => {
             <span>&nbsp;{data.nombre}</span>
           </div>
           <div className="mb-3 ml-3">
-            <strong>Precio de venta:</strong>
+            <strong>Precio:</strong>
             <span>&nbsp;{data.precioVenta}</span>
           </div>
         </div>
@@ -682,6 +732,7 @@ const OrdenServicio = () => {
                   onRowSelect={onTecnicoSelect}
                   globalFilter={globalFilter}
                   header={header}
+                  emptyMessage="No se encontraron registros."
                 >
                   <Column
                     field="cedula"
@@ -763,6 +814,7 @@ const OrdenServicio = () => {
                   onRowSelect={onProductSelect}
                   header={header}
                   globalFilter={globalFilter}
+                  emptyMessage="No se encontraron registros."
                 >
                   <Column
                     field="dni"
@@ -852,11 +904,13 @@ const OrdenServicio = () => {
             <Column
               field="porcentaje_IVA"
               header="% IVA"
+              body={porcentajeIVAbodyTemplate}
               headerStyle={{ minWidth: "8rem" }}
               />
             <Column
               field="valor_IVA"
-              header="Valor IVA"
+              header="IVA"
+              body={ivaBodyTemplate}
               headerStyle={{ minWidth: "7rem" }}
               />
             <Column
@@ -917,6 +971,7 @@ const OrdenServicio = () => {
                 paginator
                 rows={5}
                 onRowSelect={onProductoSelect}
+                emptyMessage="Registros no encontrados."
               >
                 <Column
                   field="codigo"
@@ -945,62 +1000,63 @@ const OrdenServicio = () => {
               </DataTable>
             </OverlayPanel>
           </div>
-          <div className="field">
-            <div className="col-12 md:col-6">
-              <div className="p-inputgroup">
-                <span className="p-inputgroup-addon">
-                  <label htmlFor="cantidad">
-                    <strong>Cantidad:&nbsp;</strong>
-                  </label>
-                </span>
-                <span className="p-float-label">
-                  <InputText
-                    id="cantidad"
-                    value={detalleOrdenServicio.cantidad}
-                    onChange={(e) => onInputChangeDetalle(e, "cantidad")}
-                    required
-                    pattern="[0-9]+"
-                    className={classNames({
-                      "p-invalid": submitted && !detalleOrdenServicio.cantidad,
-                    })}
+          <div className="field grid ml-2">
+            <label htmlFor="cantidad" className="col-12 mb-2 md:col-2 md:mb-0">
+              <strong>Cantidad:</strong>
+            </label>
+            <div className="col-12 md:col-10">
+                <InputText
+                  id="cantidad"
+                  value={detalleOrdenServicio.cantidad}
+                  onChange={(e) => onInputChangeDetalle(e, "cantidad")}
+                  placeholder="0"
+                  required
+                onKeyPress={(event) => {
+                  if (!/[0-9]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
+                  className={classNames({
+                    "p-invalid": submitted && !detalleOrdenServicio.cantidad,
+                  })}
                   />
-                  {submitted && !detalleOrdenServicio.cantidad && (
-                    <small className="p-invalid">
-                      El precio de venta es necesario.
-                    </small>
-                  )}
-                </span>
-              </div>
+              {submitted && !detalleOrdenServicio.cantidad && (
+                <small className="p-invalid">
+                  El precio de venta es necesario.
+                </small>
+              )}
             </div>
           </div>
-          <div className="field">
-            <div className="col-12 md:col-6">
-              <div className="p-inputgroup">
-                <span className="p-inputgroup-addon">
-                  <label htmlFor="Descuento">
-                    <strong>Descuento:&nbsp;</strong>
-                  </label>
-                </span>
-                <span className="p-float-label">
-                  <InputText
-                    id="descuento"
-                    value={detalleOrdenServicio.descuento}
-                    onChange={(e) => onInputChangeDetalle(e, "descuento")}
-                    required
-                    mode="decimal"
-                    className={classNames({
-                      "p-invalid": submitted && !detalleOrdenServicio.descuento,
-                    })}
-                  />
-                  <span className="p-inputgroup-addon">%</span>
-                  {submitted && !detalleOrdenServicio.descuento && (
-                    <small className="p-invalid">
-                      <br />
-                      El descuento es necesario.
-                    </small>
-                  )}
-                </span>
-              </div>
+          <div className="field grid ml-2">
+            <label htmlFor="Descuento" className="col-12 mb-2 md:col-2 md:mb-0">
+              <strong>Descuento:</strong>
+            </label>
+            <div className="col-12 md:col-10 lg:col-2">
+              <span className="p-input-icon-right">
+              <InputText
+                id="descuento"
+                placeholder="0"
+                value={detalleOrdenServicio.descuento}
+                onChange={(e) => onInputChangeDetalle(e, "descuento")}
+                required
+                  maxLength="2"
+                  onKeyPress={(event) => {
+                    if (!/[0-9]/.test(event.key)) {
+                      event.preventDefault();
+                    }
+                  }}
+                className={classNames({
+                  "p-invalid": submitted && !detalleOrdenServicio.descuento,
+                })}
+                />
+                <i className="pi pi-percentage" />
+              </span>
+              {submitted && !detalleOrdenServicio.descuento && (
+                <small className="p-invalid">
+                  <br />
+                  El descuento es necesario.
+                </small>
+              )}
             </div>
           </div>
         </Dialog>

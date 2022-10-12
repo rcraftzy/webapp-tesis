@@ -272,6 +272,12 @@ const Producto = () => {
       />
     </>
   );
+  const itemPrecioTemplate = (rowData) => (
+    <>
+      <span className="p-column-title">Name</span>
+      ${rowData.precioVenta}
+    </>
+  )
   const ivaBodyTemplate = (rowData) => (
     rowData.aplicaIva ?
       <strong
@@ -334,7 +340,8 @@ const Producto = () => {
             </Column>
             <Column
               field="precioVenta"
-              header="Precio de venta"
+              header="Precio"
+              body={itemPrecioTemplate}
               headerStyle={{ width: "14%", minWidth: "10rem" }}
             >
             </Column>
@@ -397,9 +404,8 @@ const Producto = () => {
               
               <div className="col-12 mb-2 lg:col-4 lg:mb-0">
                 <div className="field">
-                  <label htmlFor="precioVenta">Precio de venta</label>
-                  <div className="p-inputgroup">
-                    <span className="p-float-label">
+                  <label htmlFor="precioVenta">Precio</label>
+                    <span className="p-input-icon-left">
                         <InputText
                         id="precioVenta"
                         placeholder="0.00"
@@ -413,16 +419,15 @@ const Producto = () => {
                         className={classNames({
                           "p-invalid": submitted && !producto.precioVenta,
                         })}
-                />
-                      <span className="p-inputgroup-addon">$</span>
-                      {submitted && !producto.precioVenta && (
+                      />
+                    <i className="pi pi-dollar" />
+                    </span>
+                    {submitted && !producto.precioVenta && (
                         <small className="p-invalid">
                           <br />
                           El precio de venta es necesario.
                         </small>
                       )}
-                    </span>
-                  </div>
                 </div>
               </div>
               <div className="col-12 mb-2 lg:col-4 lg:mb-0">

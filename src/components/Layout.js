@@ -121,7 +121,7 @@ const Layout = () => {
       label: "Empresa",
       items: [
         {
-          label: "Configuración y miembros",
+          label: "Configuración",
           icon: "pi pi-fw pi-cog",
           to: "empresa",
         },

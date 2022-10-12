@@ -104,7 +104,7 @@ const Tecnico = () => {
 
         toast.current.show({
           severity: "success",
-          summary: "Successful",
+          summary: "Exito",
           detail: "Técnico actualizado",
           life: 3000,
         });

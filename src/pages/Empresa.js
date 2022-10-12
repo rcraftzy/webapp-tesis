@@ -451,7 +451,7 @@ const Empresa = () => {
         footer={empresaDialogFooter}
         onHide={hideDialogEmpresa}
       >
-        <div className="field">
+        <div className="field col-12">
           <label htmlFor="ruc">Ruc</label>
           <InputText
             id="ruc"
@@ -459,6 +459,12 @@ const Empresa = () => {
             onChange={(e) => onInputChangeEmpresa(e, "ruc")}
             required
             autoFocus
+            maxLength="13"
+            onKeyPress={(event) => {
+              if (!/[0-9]/.test(event.key)) {
+                event.preventDefault();
+              }
+            }}
             className={classNames({
               "p-invalid": submitted && !empresa.ruc,
             })}
@@ -469,7 +475,7 @@ const Empresa = () => {
             </small>
           )}
         </div>
-        <div className="field">
+        <div className="field col-12">
           <label htmlFor="nombre">Nombre</label>
           <InputText
             id="nombre"
@@ -486,7 +492,7 @@ const Empresa = () => {
             </small>
           )}
         </div>
-        <div className="field">
+        <div className="field col-12">
           <label htmlFor="direccion">Dirección</label>
           <InputText
             id="direccion"
@@ -503,7 +509,7 @@ const Empresa = () => {
             </small>
           )}
         </div>
-        <div className="field">
+        <div className="field col-12">
           <label htmlFor="Ciudad">Provincia</label>
           <Dropdown
             id="Ciudad"
@@ -515,13 +521,19 @@ const Empresa = () => {
           >
           </Dropdown>
         </div>
-        <div className="field">
+        <div className="field col-12">
           <label htmlFor="telefono">Teléfono</label>
           <InputText
             id="telefono"
             value={empresa.telefono}
             onChange={(e) => onInputChangeEmpresa(e, "telefono")}
             required
+            maxLength="9"
+            onKeyPress={(event) => {
+              if (!/[0-9]/.test(event.key)) {
+                event.preventDefault();
+              }
+            }}
             className={classNames({
               "p-invalid": submitted && !empresa.telefono,
             })}
@@ -532,7 +544,7 @@ const Empresa = () => {
             </small>
           )}
         </div>
-        <div className="field">
+        <div className="field col-12">
           <label htmlFor="email">E-mail</label>
           <InputText
             id="email"
@@ -545,24 +557,30 @@ const Empresa = () => {
           />
           {submitted && !empresa.email && (
             <small className="p-invalid">
-              El correo electronico de la empresa es requerido.
+              El correo electrónico de la empresa es requerido.
             </small>
           )}
         </div>
-        <div className="field">
+        <div className="field lg:col-4">
           <label htmlFor="iva">IVA</label>
-                              <div className="p-inputgroup">
-          <InputText
-            id="porcentajeIVA"
-            value={empresa.porcentajeIVA}
-            onChange={(e) => onInputChangeEmpresa(e, "porcentajeIVA")}
-            required
-            className={classNames({
-              "p-invalid": submitted && !empresa.porcentajeIVA,
-            })}
-            />
-                      <span className="p-inputgroup-addon">%</span>
-        </div>
+            <span className="p-input-icon-right">
+              <InputText
+              id="porcentajeIVA"
+              value={empresa.porcentajeIVA}
+              onChange={(e) => onInputChangeEmpresa(e, "porcentajeIVA")}
+              required
+              maxLength="2"
+              onKeyPress={(event) => {
+                if (!/[0-9]/.test(event.key)) {
+                  event.preventDefault();
+                }
+              }}           
+              className={classNames({
+                "p-invalid": submitted && !empresa.porcentajeIVA,
+              })}
+              />
+              <i className="pi pi-percentage" />
+            </span>
           {submitted && !empresa.porcentajeIVA && (
             <small className="p-invalid">
               El porcentaje de IVA es requerido.

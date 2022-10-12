@@ -12,6 +12,7 @@ import "./App.scss";
 
 import { DataProvider } from "./context/DataContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Pdf from "./pages/Pdf"
 
 const Login = lazy(() => import("./components/Login"));
 const Register = lazy(() => import("./components/Register"));
@@ -42,19 +43,19 @@ const App = () => {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route
-            path="/dashboard"
-            element={
-              <Layout>
-                <Dashboard />
-              </Layout>
-            }
-          />
+          <Route path="/pdf-orden" element={<Pdf />} />
+          
           <Route path="*" element={<Layout/>}>
             <Route element={<ProtectedRoute />}>
               <Route
                 path="ciudad"
                 element={<CrudCuidad />}
+                />
+              <Route
+                path="dashboard"
+                element={
+                <Dashboard />
+              }
                 />
               <Route
                 path="provincia"
