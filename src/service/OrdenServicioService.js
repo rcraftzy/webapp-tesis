@@ -14,16 +14,6 @@ export class OrdenServicioService {
     return axios.delete("http://localhost:9090/api/v1.0/ordenServicio/" + id);
   }
 
-  // Detalle orden servicio
-  getDetalles() {
-    try {
-      return axios.get("http://localhost:9090/api/v1.0/detalleordenservicio").then((
-        res,
-      ) => res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
   postDetalle(detalle) {
     return axios.post("http://localhost:9090/api/v1.0/detalleordenServicio", detalle);
   }
@@ -34,3 +24,12 @@ export class OrdenServicioService {
     return axios.delete("http://localhost:9090/api/v1.0/detalleordenServicio/" + id);
   }
 }
+export function getDetalles() {
+    try {
+      return axios.get("http://localhost:9090/api/v1.0/detalleordenservicio").then((
+        res,
+      ) => res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
