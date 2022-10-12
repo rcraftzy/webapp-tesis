@@ -7,8 +7,8 @@ export const getTecnicos = () => {
 export const postTecnicos = (tec) => {
   return axios.post("http://localhost:9090/api/v1.0/tecnico", tec);
 };
-export const putTecnicos = (tecni) => {
-  return axios.put("http://localhost:9090/api/v1.0/tecnico", tecni);
+export const putTecnicos = (id, tecni) => {
+  return axios.put("http://localhost:9090/api/v1.0/tecnico/"+id, tecni);
 };
 
 export const deleteTecnicos = (id) => {
