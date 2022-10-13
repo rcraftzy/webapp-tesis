@@ -2,9 +2,12 @@ import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/DataContext";
 
-function ProtectedRoute (){
-  const {user} = useAuth() 
+function ProtectedRoute() {
+  const { auth, data } = useAuth();
 
-  return user.name ? <Outlet /> : <Navigate to="/login" />;
+  if (!data.empresa) {
+    return <Navigate to="crear" />;
+  }
+  return auth ? <Outlet /> : <Navigate to="/login" />;
 }
 export default ProtectedRoute;
