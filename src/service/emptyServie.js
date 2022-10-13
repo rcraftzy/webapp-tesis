@@ -1,28 +1,52 @@
-export let emptyEmpresaUser = {
+export let emptyEmpresa = {
+  id: null,
+  ruc: "",
+  nombre: "",
+  direccion: "",
+  ciudad: {
     id: null,
-    user: {
+    nombre: "",
+    provincia: {
       id: null,
-      name: "",
-      email: "",
-    },
-    empresa: {
-      id: null,
-      ruc: "",
       nombre: "",
-      direccion: "",
-      ciudad: {
+    },
+  },
+  telefono: "",
+  email: "",
+  porcentajeIVA: "",
+};
+export let emptyEstado = {
+  id: null,
+  state: "",
+  color: "",
+  empresa_id: null,
+};
+
+export let emptyEmpresaUser = {
+  id: null,
+  user: {
+    id: null,
+    name: "",
+    email: "",
+  },
+  empresa: {
+    id: null,
+    ruc: "",
+    nombre: "",
+    direccion: "",
+    ciudad: {
+      id: null,
+      nombre: "",
+      provincia: {
         id: null,
         nombre: "",
-        provincia: {
-          id: null,
-          nombre: "",
-        },
       },
-      telefono: "",
-      email: "",
-      porcentajeIVA: null,
     },
-}
+    telefono: "",
+    email: "",
+    porcentajeIVA: null,
+  },
+};
 export let emptyProducto = {
   id: null,
   codigo: "",
