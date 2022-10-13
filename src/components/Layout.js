@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
-import { useLocation, Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import { CSSTransition } from "react-transition-group";
 import { AppTopbar } from "../AppTopbar";
@@ -17,7 +17,8 @@ const Layout = () => {
   const [ripple, setRipple] = useState(true);
   const [staticMenuInactive, setStaticMenuInactive] = useState(false);
   const [overlayMenuActive, setOverlayMenuActive] = useState(false);
-  const [mobileMenuActive, setMobileMenuActive] = useState(false); const [mobileTopbarMenuActive, setMobileTopbarMenuActive] = useState(false);
+  const [mobileMenuActive, setMobileMenuActive] = useState(false);
+  const [mobileTopbarMenuActive, setMobileTopbarMenuActive] = useState(false);
   const copyTooltipRef = useRef();
   const location = useLocation();
 
